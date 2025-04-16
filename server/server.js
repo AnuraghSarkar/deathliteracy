@@ -33,6 +33,13 @@ app.use(session({
   saveUninitialized: false
 }));
 
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Import middleware with Passport configuration
+require('./middleware/authMiddleware');
+
 // Simple test route
 router.get('/test', (req, res) => {
   res.send('Backend is working!');
@@ -44,6 +51,36 @@ app.use('/', router);
 // Basic route for testing
 app.get('/', (req, res) => {
   res.send('Death Literacy API is running');
+});
+
+// Google auth routes (IMPORTANT: These should come before your API routes)
+app.get('/auth/google', 
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Create JWT token for the authenticated user
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    
+    // Redirect to frontend with token
+    res.redirect(`http://localhost:3000/oauth-callback?token=${token}`);
+  }
+);
+
+// Define API routes
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/questions', require('./routes/questionRoutes'));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode);
+  res.json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+  });
 });
 
 // Set port

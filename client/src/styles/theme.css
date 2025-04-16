@@ -1,0 +1,399 @@
+/* theme.css - revised */
+:root {
+    --primary: #CC2936;
+    --primary-light: #D84654;
+    --primary-dark: #B32530;
+    --text-dark: #2D3142;
+    --text-light: #6B7280;
+    --background: #FFFFFF;
+    --background-pattern: #F9FAFB;
+    --border-color: #E5E7EB;
+    --footer-bg: #1F2937;
+    --card-bg: #FFFFFF;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark-mode {
+    --text-dark: #E5E7EB;
+    --text-light: #9CA3AF;
+    --background: #111827;
+    --background-pattern: #1F2937;
+    --border-color: #374151;
+    --card-bg: #1F2937;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  body {
+    overflow-x: hidden;
+
+    background-color: var(--background);
+    color: var(--text-dark);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Navbar adjustments for dark mode */
+  .navbar {
+    background-color: var(--card-bg);
+    transition: background-color 0.3s ease;
+  }
+  
+  .logo-text {
+    color: var(--text-dark);
+    transition: color 0.3s ease;
+  }
+  
+  .theme-toggle {
+    color: var(--text-dark);
+    transition: color 0.3s ease;
+  }
+  
+  /* Button adjustments for dark mode */
+  .btn-login {
+    color: var(--text-dark);
+    transition: color 0.3s ease;
+  }
+  
+  .btn-signup {
+    /* Keep the same color in both modes for visibility */
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  .dark-mode .btn-secondary {
+    border-color: #4B5563;
+    color: var(--text-dark);
+  }
+  
+  .dark-mode .btn-secondary:hover {
+    background-color: #374151;
+  }
+  
+  /* Form elements in dark mode */
+  .dark-mode .form-control {
+    background-color: #1F2937;
+    color: var(--text-dark);
+    border-color: #4B5563;
+  }
+  
+  .dark-mode .form-control:focus {
+    border-color: var(--primary);
+  }
+  
+  .dark-mode .form-label {
+    color: var(--text-dark);
+  }
+  
+  /* Card and content areas in dark mode */
+  .dark-mode .question-card,
+  .dark-mode .auth-form-container,
+  .dark-mode .option-item {
+    background-color: var(--card-bg);
+    color: var(--text-dark);
+  }
+  
+  .dark-mode .option-item {
+    border-color: #4B5563;
+  }
+  
+  .dark-mode .option-item:hover {
+    border-color: var(--primary);
+  }
+  
+  .dark-mode .option-item.selected {
+    background-color: rgba(204, 41, 54, 0.2);
+    border-color: var(--primary);
+  }
+  
+  /* Text adjustments for dark mode */
+  .dark-mode .hero-title,
+  .dark-mode .hero-subtitle,
+  .dark-mode .auth-title,
+  .dark-mode .question-text {
+    color: #F3F4F6;
+  }
+  
+  .dark-mode .hero-text,
+  .dark-mode .auth-footer,
+  .dark-mode .question-count {
+    color: #D1D5DB;
+  }
+  
+  /* Other elements in dark mode */
+  .dark-mode .footer-wave path {
+    fill: #0F172A;
+  }
+  
+  /* High contrast elements remain visible in dark mode */
+  .dark-mode .auth-link {
+    color: var(--primary-light);
+  }
+  
+  .dark-mode .question-category {
+    color: var(--primary-light);
+  }
+  
+  /* Dark mode pattern background adjustment */
+  .dark-mode body {
+    background-image: radial-gradient(
+      circle at 100% 50%,
+      transparent 20%,
+      rgba(255, 255, 255, 0.03) 21%,
+      rgba(255, 255, 255, 0.03) 34%,
+      transparent 35%,
+      transparent
+    ),
+    radial-gradient(
+      circle at 0% 50%,
+      transparent 20%,
+      rgba(255, 255, 255, 0.03) 21%,
+      rgba(255, 255, 255, 0.03) 34%,
+      transparent 35%,
+      transparent
+    );
+  }
+  /* Theme transition wave effect */
+.theme-transition-wave {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-transition-wave svg {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+}
+
+.dark-mode .theme-transition-wave.dark-wave {
+  opacity: 0.15;
+  z-index: -1;
+}
+
+.theme-transition-wave.light-wave {
+  opacity: 0;
+  z-index: -1;
+}
+
+/* Custom background patterns for dark/light mode */
+body {
+  background-color: var(--background);
+  background-size: 20px 20px;
+  background-image: radial-gradient(
+    circle at 100% 50%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.03) 21%,
+    rgba(0, 0, 0, 0.03) 34%,
+    transparent 35%,
+    transparent
+  ),
+  radial-gradient(
+    circle at 0% 50%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.03) 21%,
+    rgba(0, 0, 0, 0.03) 34%,
+    transparent 35%,
+    transparent
+  );
+  transition: background-color 0.3s ease, background-image 0.3s ease;
+}
+
+.dark-mode body {
+  background-image: radial-gradient(
+    circle at 100% 50%,
+    transparent 20%,
+    rgba(255, 255, 255, 0.03) 21%,
+    rgba(255, 255, 255, 0.03) 34%,
+    transparent 35%,
+    transparent
+  ),
+  radial-gradient(
+    circle at 0% 50%,
+    transparent 20%,
+    rgba(255, 255, 255, 0.03) 21%,
+    rgba(255, 255, 255, 0.03) 34%,
+    transparent 35%,
+    transparent
+  );
+}
+
+/* Enhanced toggle button with transition */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 1rem;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle:hover {
+  transform: rotate(15deg);
+  -webkit-transform: rotate(15deg);
+  -moz-transform: rotate(15deg);
+  -ms-transform: rotate(15deg);
+  -o-transform: rotate(15deg);
+}
+
+/* Footer wave styling */
+.footer-wave svg path {
+    fill: #1F2937; /* Default darker color in light mode */
+    transition: fill 0.5s ease;
+  }
+  
+  .dark-mode .footer-wave svg path {
+    fill: #b1bdcf; /* Lighter slate color in dark mode for better visibility */
+  }
+  
+  body {
+    transition: background-color 0.5s ease, color 0.5s ease;
+    -webkit-transition: background-color 0.5s ease, color 0.5s ease;
+    -moz-transition: background-color 0.5s ease, color 0.5s ease;
+    -ms-transition: background-color 0.5s ease, color 0.5s ease;
+    -o-transition: background-color 0.5s ease, color 0.5s ease;
+}
+  
+  .dark-mode body {
+    background-color: var(--background);
+    color: var(--text-dark);
+  }
+
+  /* Enhance visibility in dark mode */
+.dark-mode .navbar {
+    background-color: #1F2937;
+  }
+  
+  .dark-mode .logo-text,
+  .dark-mode .theme-toggle,
+  .dark-mode .btn-login {
+    color: #F3F4F6;
+  }
+  
+  .dark-mode .btn-signup {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  .dark-mode .btn-secondary {
+    border-color: #4B5563;
+    color: #F3F4F6;
+  }
+  
+  .dark-mode .form-control {
+    background-color: #374151;
+    border-color: #4B5563;
+    color: #F3F4F6;
+  }
+  
+  .dark-mode .question-card,
+  .dark-mode .auth-form-container {
+    background-color: #1F2937;
+  }
+  
+  .dark-mode .option-item {
+    background-color: #1F2937;
+    border-color: #4B5563;
+    color: #F3F4F6;
+  }
+  
+  .dark-mode .option-item.selected {
+    background-color: rgba(204, 41, 54, 0.2);
+    border-color: var(--primary);
+  }
+
+@keyframes waveColorChange {
+    0% { fill: #1F2937; }
+    50% { fill: #CC2936; } /* Your primary red */
+    100% { fill: #475569; } /* Lighter slate color */
+  }
+  
+  @keyframes waveColorChangeReverse {
+    0% { fill: #475569; }
+    50% { fill: #CC2936; } /* Your primary red */
+    100% { fill: #1F2937; }
+  }
+  
+  .footer-wave .wave-path {
+    fill: #1F2937;
+    transition: fill 0.5s ease;
+  }
+  
+  .dark-mode .footer-wave .wave-path {
+    fill: #475569;
+  }
+  
+  .dark-mode .footer-wave.animating .wave-path {
+    animation: waveColorChange 1s forwards;
+  }
+  
+  .footer-wave.animating .wave-path:not(.dark-mode) {
+    animation: waveColorChangeReverse 1s forwards;
+  }
+
+    /* Dark mode specific adjustments */
+    .dark-mode .navbar,
+    .dark-mode .auth-form-container,
+    .dark-mode .question-card {
+      background-color: var(--card-bg);
+    }
+    
+    .dark-mode .logo-text,
+    .dark-mode .hero-subtitle,
+    .dark-mode .hero-title,
+    .dark-mode .hero-text,
+    .dark-mode .btn-login,
+    .dark-mode .theme-toggle,
+    .dark-mode .auth-title,
+    .dark-mode .form-label,
+    .dark-mode .form-section-title,
+    .dark-mode .checkbox-label,
+    .dark-mode .assessment-title,
+    .dark-mode .question-text {
+      color: var(--text-dark);
+    }
+    
+    .dark-mode .form-control {
+      background-color: #1F2937;
+      border-color: var(--border-color);
+      color: var(--text-dark);
+    }
+    
+    .dark-mode .btn-secondary {
+      border-color: var(--border-color);
+      color: var(--text-dark);
+    }
+    
+    .dark-mode .option-item {
+      background-color: var(--card-bg);
+      border-color: var(--border-color);
+      color: var(--text-dark);
+    }
+    
+    .dark-mode .question-category {
+      color: var(--primary-light);
+    }
+    
+    .dark-mode .auth-link {
+      color: var(--primary-light);
+    }
+    
+    /* Wave color animation for theme toggle */
+    @keyframes waveColorChange {
+      0% { fill: #1F2937; }
+      50% { fill: var(--primary); }
+      100% { fill: #475569; }
+    }
+    
+    .footer-wave.animating svg path {
+      animation: waveColorChange 1s forwards;
+    }
