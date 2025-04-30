@@ -32,7 +32,7 @@ const HomePage = () => {
             </p>
             <div className="hero-buttons">
               <button className="btn-primary" onClick={handleStartQuiz}>
-                Start Quiz
+                Start Quiz Now
               </button>
               <Link to="/login" className="btn-secondary">
                 Already have an account?
