@@ -2,7 +2,7 @@ import countryList from 'react-select-country-list';
 const rawQuestions = [
   {
     id: "Q1",
-    "question": "Country of residence",
+    "question": "Country of residence.",
     "options": { }
   },
   {
