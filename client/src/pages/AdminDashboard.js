@@ -5,6 +5,12 @@ import '../styles/AdminDashboard.css';
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState({
+    totalUsers: 125,
+    totalAssessments: 98,
+    averageScore: 72,
+    completionRate: 68
+  });
   
   useEffect(() => {
     // Check if user is authenticated
@@ -12,9 +18,10 @@ const AdminDashboard = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).token 
       : null;
       
-    if (!token) {
-      navigate('/login');
-    }
+    // Temporarily disable redirection for development
+    // if (!token) {
+    //   navigate('/login');
+    // }
   }, [navigate]);
 
   return (
@@ -56,9 +63,48 @@ const AdminDashboard = () => {
         </div>
         <div className="content-body">
           {activeTab === 'overview' && (
-            <div>
+            <div className="dashboard-overview">
               <h2>Dashboard Overview</h2>
-              <p>Welcome to the admin dashboard. Select a tab from the sidebar to get started.</p>
+              
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <h3>Total Users</h3>
+                  <div className="stat-value">{stats.totalUsers}</div>
+                </div>
+                
+                <div className="stat-card">
+                  <h3>Assessments Completed</h3>
+                  <div className="stat-value">{stats.totalAssessments}</div>
+                </div>
+                
+                <div className="stat-card">
+                  <h3>Average Score</h3>
+                  <div className="stat-value">{stats.averageScore}%</div>
+                </div>
+                
+                <div className="stat-card">
+                  <h3>Completion Rate</h3>
+                  <div className="stat-value">{stats.completionRate}%</div>
+                </div>
+              </div>
+              
+              <div className="recent-activity">
+                <h3>Recent Activity</h3>
+                <div className="activity-list">
+                  <div className="activity-item">
+                    <span className="activity-time">Today, 10:45 AM</span>
+                    <span className="activity-description">New user registered: John Smith</span>
+                  </div>
+                  <div className="activity-item">
+                    <span className="activity-time">Yesterday, 3:20 PM</span>
+                    <span className="activity-description">Assessment completed by Sarah Johnson</span>
+                  </div>
+                  <div className="activity-item">
+                    <span className="activity-time">Yesterday, 11:15 AM</span>
+                    <span className="activity-description">Question bank updated by Admin</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           
@@ -87,5 +133,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;
