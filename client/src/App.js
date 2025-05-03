@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AssessmentPage from './pages/AssessmentPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
+import AdminDashboard from './pages/AdminDashboard'
 import './styles/index.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
 
         </Routes>
       </Router>
