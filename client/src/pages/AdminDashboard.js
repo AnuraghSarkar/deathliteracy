@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     averageScore: 72,
     completionRate: 68,
   });
+
   // Questions management state
   const [questions, setQuestions] = useState([
     {
@@ -48,11 +49,57 @@ const AdminDashboard = () => {
       { value: "", label: "" },
     ],
   });
+
+  // Reports management state
+  const [reportType, setReportType] = useState("summary");
+  const [dateRange, setDateRange] = useState("last30days");
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState(null);
+
+  // Users management state
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      username: "user1",
+      email: "user1@example.com",
+      role: "individual",
+      joined: "2024-04-15",
+      assessments: 3,
+    },
+    {
+      id: 2,
+      username: "researcher1",
+      email: "researcher1@example.com",
+      role: "researcher",
+      joined: "2024-04-10",
+      assessments: 1,
+    },
+    {
+      id: 3,
+      username: "admin",
+      email: "admin@example.com",
+      role: "admin",
+      joined: "2024-04-01",
+      assessments: 2,
+    },
+    {
+      id: 4,
+      username: "user2",
+      email: "user2@example.com",
+      role: "individual",
+      joined: "2024-04-18",
+      assessments: 0,
+    },
+  ]);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+
   useEffect(() => {
     // Check if user is authenticated
     const token = localStorage.getItem("userInfo")
       ? JSON.parse(localStorage.getItem("userInfo")).token
       : null;
+
     // Temporarily disable redirection for development
     // if (!token) {
     // navigate('/login');
@@ -67,6 +114,16 @@ const AdminDashboard = () => {
     const matchesCategory =
       selectedCategory === "all" || question.category === selectedCategory;
     return matchesSearch && matchesCategory;
+  });
+
+  // Filter users based on search term and role
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.username.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(userSearchTerm.toLowerCase());
+    const matchesRole =
+      userRoleFilter === "all" || user.role === userRoleFilter;
+    return matchesSearch && matchesRole;
   });
 
   // Handle showing the form for adding a new question
@@ -105,6 +162,7 @@ const AdminDashboard = () => {
   // Handle form submission
   const handleFormSubmit = (e) => {
     e.preventDefault();
+
     if (currentQuestion) {
       // Update existing question
       const updatedQuestions = questions.map((q) =>
@@ -126,6 +184,7 @@ const AdminDashboard = () => {
       };
       setQuestions([...questions, newQuestion]);
     }
+
     setShowQuestionForm(false);
   };
 
@@ -162,6 +221,49 @@ const AdminDashboard = () => {
     if (window.confirm("Are you sure you want to delete this question?")) {
       setQuestions(questions.filter((q) => q.id !== id));
     }
+  };
+
+  // Handle generating report
+  const handleGenerateReport = () => {
+    setGeneratingReport(true);
+
+    // Simulate API call with a delay
+    setTimeout(() => {
+      // Generate mock report data based on report type
+      const mockReport = {
+        type: reportType,
+        dateRange: dateRange,
+        generatedAt: new Date().toLocaleString(),
+        data: {
+          totalParticipants: 98,
+          averageScore: 72,
+          demographicBreakdown: {
+            "18-30": 22,
+            "31-45": 35,
+            "46-60": 28,
+            "61+": 13,
+          },
+          scoreDistribution: {
+            "Low (0-40%)": 15,
+            "Medium (41-70%)": 38,
+            "High (71-100%)": 45,
+          },
+          topStrengthAreas: [
+            "Understanding grief processes",
+            "Knowledge of funeral planning",
+            "Comfort discussing death",
+          ],
+          improvementAreas: [
+            "Legal aspects of end-of-life planning",
+            "Palliative care options",
+            "Supporting others through bereavement",
+          ],
+        },
+      };
+
+      setGeneratedReport(mockReport);
+      setGeneratingReport(false);
+    }, 2000);
   };
 
   return (
@@ -211,24 +313,29 @@ const AdminDashboard = () => {
           {activeTab === "overview" && (
             <div className="dashboard-overview">
               <h2>Dashboard Overview</h2>
+
               <div className="stats-grid">
                 <div className="stat-card">
                   <h3>Total Users</h3>
                   <div className="stat-value">{stats.totalUsers}</div>
                 </div>
+
                 <div className="stat-card">
                   <h3>Assessments Completed</h3>
                   <div className="stat-value">{stats.totalAssessments}</div>
                 </div>
+
                 <div className="stat-card">
                   <h3>Average Score</h3>
                   <div className="stat-value">{stats.averageScore}%</div>
                 </div>
+
                 <div className="stat-card">
                   <h3>Completion Rate</h3>
                   <div className="stat-value">{stats.completionRate}%</div>
                 </div>
               </div>
+
               <div className="recent-activity">
                 <h3>Recent Activity</h3>
                 <div className="activity-list">
@@ -254,12 +361,76 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
           {activeTab === "users" && (
-            <div>
-              <h2>User Management</h2>
-              <p>User management features will be added here.</p>
+            <div className="users-management">
+              <div className="section-header">
+                <h2>User Management</h2>
+                <button className="btn-primary">Add New User</button>
+              </div>
+
+              <div className="filter-controls">
+                <div className="search-box">
+                  <input
+                    type="text"
+                    placeholder="Search users by name or email..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div className="filter-dropdown">
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="individual">Individual</option>
+                    <option value="researcher">Researcher</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="users-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Joined Date</th>
+                      <th>Assessments</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.username}</td>
+                        <td>{user.email}</td>
+                        <td>
+                          <span className={`role-badge ${user.role}`}>
+                            {user.role.charAt(0).toUpperCase() +
+                              user.role.slice(1)}
+                          </span>
+                        </td>
+                        <td>{user.joined}</td>
+                        <td>{user.assessments}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button className="btn-edit">Edit</button>
+                            <button className="btn-delete">Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
+
           {activeTab === "questions" && (
             <div className="questions-management">
               <div className="section-header">
@@ -268,6 +439,7 @@ const AdminDashboard = () => {
                   Add New Question
                 </button>
               </div>
+
               <div className="filter-controls">
                 <div className="search-box">
                   <input
@@ -277,6 +449,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
+
                 <div className="filter-dropdown">
                   <select
                     value={selectedCategory}
@@ -290,6 +463,7 @@ const AdminDashboard = () => {
                   </select>
                 </div>
               </div>
+
               <div className="questions-table">
                 <table>
                   <thead>
@@ -331,14 +505,164 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
           {activeTab === "reports" && (
-            <div>
-              <h2>Reports</h2>
-              <p>Report generation features will be added here.</p>
+            <div className="reports-management">
+              <div className="section-header">
+                <h2>Reports</h2>
+              </div>
+
+              <div className="report-options">
+                <div className="form-group">
+                  <label>Report Type</label>
+                  <select
+                    value={reportType}
+                    onChange={(e) => setReportType(e.target.value)}
+                  >
+                    <option value="summary">Summary Report</option>
+                    <option value="detailed">Detailed Analysis</option>
+                    <option value="demographics">Demographics Report</option>
+                    <option value="responses">Individual Responses</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Date Range</label>
+                  <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value)}
+                  >
+                    <option value="last7days">Last 7 Days</option>
+                    <option value="last30days">Last 30 Days</option>
+                    <option value="last90days">Last 90 Days</option>
+                    <option value="alltime">All Time</option>
+                  </select>
+                </div>
+
+                <button
+                  className="btn-primary"
+                  onClick={handleGenerateReport}
+                  disabled={generatingReport}
+                >
+                  {generatingReport ? "Generating..." : "Generate Report"}
+                </button>
+              </div>
+
+              {generatedReport && (
+                <div className="generated-report">
+                  <div className="report-header">
+                    <h3>
+                      {generatedReport.type === "summary"
+                        ? "Summary Report"
+                        : generatedReport.type === "detailed"
+                        ? "Detailed Analysis"
+                        : generatedReport.type === "demographics"
+                        ? "Demographics Report"
+                        : "Individual Responses"}
+                    </h3>
+                    <p>Generated on: {generatedReport.generatedAt}</p>
+                    <p>
+                      Date Range:{" "}
+                      {generatedReport.dateRange === "last7days"
+                        ? "Last 7 Days"
+                        : generatedReport.dateRange === "last30days"
+                        ? "Last 30 Days"
+                        : generatedReport.dateRange === "last90days"
+                        ? "Last 90 Days"
+                        : "All Time"}
+                    </p>
+                  </div>
+
+                  <div className="report-content">
+                    <div className="report-section">
+                      <h4>Participation Overview</h4>
+                      <div className="stat-row">
+                        <div className="stat-item">
+                          <span className="stat-label">Total Participants</span>
+                          <span className="stat-value">
+                            {generatedReport.data.totalParticipants}
+                          </span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Average Score</span>
+                          <span className="stat-value">
+                            {generatedReport.data.averageScore}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="report-section">
+                      <h4>Demographic Breakdown</h4>
+                      <div className="chart-placeholder">
+                        {Object.entries(
+                          generatedReport.data.demographicBreakdown
+                        ).map(([age, count]) => (
+                          <div className="chart-bar" key={age}>
+                            <span className="bar-label">{age}</span>
+                            <div className="bar" style={{ width: `${count}%` }}>
+                              <span className="bar-value">{count}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="report-section">
+                      <h4>Score Distribution</h4>
+                      <div className="chart-placeholder">
+                        {Object.entries(
+                          generatedReport.data.scoreDistribution
+                        ).map(([level, percentage]) => (
+                          <div className="chart-bar" key={level}>
+                            <span className="bar-label">{level}</span>
+                            <div
+                              className="bar"
+                              style={{ width: `${percentage}%` }}
+                            >
+                              <span className="bar-value">{percentage}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="report-section split">
+                      <div className="section-half">
+                        <h4>Top Strength Areas</h4>
+                        <ul>
+                          {generatedReport.data.topStrengthAreas.map(
+                            (area, index) => (
+                              <li key={index}>{area}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                      <div className="section-half">
+                        <h4>Areas for Improvement</h4>
+                        <ul>
+                          {generatedReport.data.improvementAreas.map(
+                            (area, index) => (
+                              <li key={index}>{area}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="report-actions">
+                    <button className="btn-secondary">Download PDF</button>
+                    <button className="btn-secondary">Download CSV</button>
+                    <button className="btn-secondary">Print</button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
       {/* Question Form Modal */}
       {showQuestionForm && (
         <div className="modal-overlay">
@@ -363,6 +687,7 @@ const AdminDashboard = () => {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label>Question Type</label>
                 <select
@@ -379,6 +704,7 @@ const AdminDashboard = () => {
                   <option value="text">Text Entry</option>
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Category</label>
                 <select
@@ -394,6 +720,7 @@ const AdminDashboard = () => {
                   <option value="Knowledge">Knowledge</option>
                 </select>
               </div>
+
               {(formData.type === "single_choice" ||
                 formData.type === "multiple_choice" ||
                 formData.type === "scale") && (
@@ -439,6 +766,7 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               )}
+
               <div className="form-actions">
                 <button
                   type="button"
@@ -458,5 +786,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;
