@@ -7,7 +7,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AssessmentPage from './pages/AssessmentPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
-import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboard from './pages/AdminDashboard';
+import ProfilePage from './pages/ProfilePage';
 import './styles/index.css';
 
 function App() {
@@ -22,7 +23,7 @@ function App() {
           <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
-
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Router>
     </ThemeProvider>
