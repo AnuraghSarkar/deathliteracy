@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AdminDashboard.css";
+import adminService from "../services/adminService";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -13,29 +14,7 @@ const AdminDashboard = () => {
   });
 
   // Questions management state
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      text: "How confident are you in discussing end-of-life matters?",
-      type: "scale",
-      category: "Skills",
-      options: 5,
-    },
-    {
-      id: 2,
-      text: "What is your age group?",
-      type: "single_choice",
-      category: "Demographics",
-      options: 5,
-    },
-    {
-      id: 3,
-      text: "Have you ever experienced the death of a close family member?",
-      type: "yes_no",
-      category: "Experience",
-      options: 2,
-    },
-  ]);
+  const [questions, setQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showQuestionForm, setShowQuestionForm] = useState(false);
@@ -96,15 +75,38 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem("userInfo")
-      ? JSON.parse(localStorage.getItem("userInfo")).token
+    const userInfo = localStorage.getItem("userInfo")
+      ? JSON.parse(localStorage.getItem("userInfo"))
       : null;
 
     // Temporarily disable redirection for development
-    // if (!token) {
+    // if (!userInfo) {
     // navigate('/login');
     // }
+    
+    // Load questions when component mounts
+    loadQuestions();
   }, [navigate]);
+
+  const loadQuestions = async () => {
+    try {
+      const response = await adminService.getQuestions();
+      
+      // Transform API data to match component data structure
+      const formattedQuestions = response.map(q => ({
+        id: q._id,
+        text: q.text,
+        type: q.type,
+        category: q.category,
+        options: q.options.length,
+      }));
+      
+      setQuestions(formattedQuestions);
+    } catch (error) {
+      console.error("Failed to load questions:", error);
+      // Keep existing mock data if API fails
+    }
+  };
 
   // Filter questions based on search term and category
   const filteredQuestions = questions.filter((question) => {
@@ -160,32 +162,55 @@ const AdminDashboard = () => {
   };
 
   // Handle form submission
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-
-    if (currentQuestion) {
-      // Update existing question
-      const updatedQuestions = questions.map((q) =>
-        q.id === currentQuestion.id
-          ? {
-              ...formData,
-              id: currentQuestion.id,
-              options: formData.options.length,
-            }
-          : q
-      );
-      setQuestions(updatedQuestions);
-    } else {
-      // Add new question
-      const newQuestion = {
+    
+    try {
+      // Convert options from form format to API format
+      const formattedOptions = formData.options.map((opt, index) => ({
+        value: opt.value || `option${index + 1}`,
+        label: opt.label || `Option ${index + 1}`
+      }));
+      
+      const questionData = {
         ...formData,
-        id: questions.length + 1,
-        options: formData.options.length,
+        options: formattedOptions
       };
-      setQuestions([...questions, newQuestion]);
-    }
+      
+      if (currentQuestion) {
+        // Update existing question
+        await adminService.updateQuestion(currentQuestion.id, questionData);
+        
+        // Update questions list
+        setQuestions(questions.map((q) =>
+          q.id === currentQuestion.id
+            ? {
+                ...q,
+                text: formData.text,
+                type: formData.type,
+                category: formData.category,
+                options: formData.options.length,
+              }
+            : q
+        ));
+      } else {
+        // Add new question
+        const newQuestion = await adminService.createQuestion(questionData);
+        
+        // Add to questions list
+        setQuestions([...questions, {
+          id: newQuestion._id,
+          text: newQuestion.text,
+          type: newQuestion.type,
+          category: newQuestion.category,
+          options: newQuestion.options.length,
+        }]);
+      }
 
-    setShowQuestionForm(false);
+      setShowQuestionForm(false);
+    } catch (error) {
+      alert(error.message || "An error occurred while saving the question");
+    }
   };
 
   // Handle adding an option
@@ -217,9 +242,14 @@ const AdminDashboard = () => {
   };
 
   // Handle deleting a question
-  const handleDeleteQuestion = (id) => {
+  const handleDeleteQuestion = async (id) => {
     if (window.confirm("Are you sure you want to delete this question?")) {
-      setQuestions(questions.filter((q) => q.id !== id));
+      try {
+        await adminService.deleteQuestion(id);
+        setQuestions(questions.filter((q) => q.id !== id));
+      } catch (error) {
+        alert(error.message || "Failed to delete question");
+      }
     }
   };
 

@@ -72,6 +72,8 @@ app.get('/auth/google/callback',
 // Define API routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
