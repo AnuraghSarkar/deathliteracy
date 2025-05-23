@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import countryList from 'react-select-country-list';
 import ThemeContext from '../context/ThemeContext';
@@ -6,6 +7,7 @@ import rawQuestions from '../data/questions';
 
 const AssessmentPage = () => {
   const { darkMode } = useContext(ThemeContext);
+  const navigate = useNavigate();
 
   const countryOptions = countryList().getData().map(c => ({
     value: c.label,
@@ -50,7 +52,7 @@ const AssessmentPage = () => {
       const newValues = currentValues.includes(value)
         ? currentValues.filter(v => v !== value)
         : [...currentValues, value];
-      setUserAnswers({ ...userAnswers, [id]: newValues });
+      setUserAnswers({ ...userAnswers, [id]: value });
     } else {
       setUserAnswers({ ...userAnswers, [id]: value });
     }
@@ -66,13 +68,35 @@ const AssessmentPage = () => {
     if (currentQuestion < visibleQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      setQuizCompleted(true);
+      // Quiz completed - navigate to results
+      completeQuiz();
     }
   };
 
   const handlePrevious = () => {
     setErrorPopup('');
     if (currentQuestion > 0) setCurrentQuestion(currentQuestion - 1);
+  };
+
+  const completeQuiz = () => {
+    // Extract demographics from answers
+    const demographics = {
+      country: userAnswers['Q1'],
+      state: userAnswers['Q1a'],
+      location: userAnswers['Q2'],
+      age: userAnswers['Q3'],
+      gender: userAnswers['Q4'],
+      terminalIllness: userAnswers['Q5']
+    };
+
+    // Navigate to results page with answers and demographics
+    navigate('/results', {
+      state: {
+        answers: userAnswers,
+        demographics: demographics,
+        completedAt: new Date().toISOString()
+      }
+    });
   };
 
   const renderQuestion = (q) => {
@@ -156,6 +180,7 @@ const AssessmentPage = () => {
   };
 
   const startQuiz = () => setQuizStarted(true);
+  
   const resetQuiz = () => {
     setUserAnswers({});
     setQuizCompleted(false);
@@ -169,27 +194,24 @@ const AssessmentPage = () => {
       <div className="assessment-container">
         <div className="assessment-intro">
           <h1 className="assessment-title">Death Literacy Assessment</h1>
-          <p className="assessment-description">Click below to begin.</p>
+          <p className="assessment-description">
+            This assessment will help you understand your knowledge and comfort level with death, dying, and end-of-life care. 
+            It takes about 10-15 minutes to complete.
+          </p>
           <button className="btn-primary" onClick={startQuiz}>Start Assessment</button>
         </div>
       </div>
     );
   }
 
-  if (quizCompleted) {
+  if (!question) {
     return (
       <div className="assessment-container">
-        <div className="assessment-results">
-          <h1>Assessment Completed</h1>
-          <p>Thanks for completing the assessment. Your answers have been recorded.</p>
-          <button className="btn-secondary" onClick={resetQuiz}>Take Again</button>
+        <div className="loading">
+          <p>Processing your results...</p>
         </div>
       </div>
     );
-  }
-
-  if (!question) {
-    return <div className="assessment-container"><p>All questions complete!</p></div>;
   }
 
   return (
@@ -200,15 +222,14 @@ const AssessmentPage = () => {
       </div>
 
       {errorPopup && (
-    <div className="popup-overlay">
-        <div className="popup-box">
-        <h3>⚠️ Attention</h3>
-        <p>{errorPopup}</p>
-        <button className="popup-close-btn" onClick={() => setErrorPopup('')}>OK</button>
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <h3>⚠️ Attention</h3>
+            <p>{errorPopup}</p>
+            <button className="popup-close-btn" onClick={() => setErrorPopup('')}>OK</button>
+          </div>
         </div>
-    </div>
-)}
-
+      )}
 
       {renderQuestion(question)}
 
@@ -217,7 +238,7 @@ const AssessmentPage = () => {
           Previous
         </button>
         <button className="btn-primary" onClick={handleNext}>
-          {currentQuestion < visibleQuestions.length - 1 ? 'Next' : 'Submit'}
+          {currentQuestion < visibleQuestions.length - 1 ? 'Next' : 'Complete Assessment'}
         </button>
       </div>
     </div>

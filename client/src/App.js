@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AssessmentPage from './pages/AssessmentPage';
+import ResultsPage from './pages/ResultsPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
@@ -22,6 +23,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/oauth-callback" element={<OAuthCallbackPage />} />
           <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/results" element={<ResultsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Routes>
