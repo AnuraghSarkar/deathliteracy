@@ -27,13 +27,13 @@ const ResultsPage = () => {
     // Calculate scores
     const userScores = calculateOverallScore(answers);
     const comparisons = compareWithBenchmarks(userScores);
-    const socialScore = calculateSocialConnectionScore(answers);
+    const socialConnection = calculateSocialConnectionScore(answers);
     const feedback = generateFeedback(comparisons, demographics, answers);
 
     setResults({
       userScores,
       comparisons,
-      socialScore,
+      socialConnection,
       feedback,
       answers,
       demographics
@@ -162,8 +162,14 @@ ${results.feedback.recommendations.map(r => `- ${r}`).join('\n')}
       <div className="social-connection">
         <h2>Social Connection Score</h2>
         <div className="social-score">
-          <span className="score">{results.socialScore.toFixed(1)}/4</span>
-          <p>This measures your sense of community support and connection</p>
+          <span className="score">{results.socialConnection.score.toFixed(1)}/4</span>
+          <p>National Average: {results.socialConnection.benchmark}/4</p>
+          <div className={`level-indicator ${results.socialConnection.level}`}>
+            {results.socialConnection.level === 'higher' && 'Above Average'}
+            {results.socialConnection.level === 'similar' && 'Average'}
+            {results.socialConnection.level === 'lower' && 'Below Average'}
+          </div>
+          <p className="description">This measures your sense of community support and connection</p>
         </div>
       </div>
 
