@@ -1,9 +1,12 @@
+import { BENCHMARK_DATA, FEEDBACK_TEMPLATES, getPersonalizedRecommendations } from '../data/benchmarkData';
+
+// National benchmarks from the research paper
 const NATIONAL_BENCHMARKS = {
-  overall: 6.2,
-  skills: 6.8,
-  experience: 6.4,
-  knowledge: 5.7,
-  community: 6.1
+  overall: BENCHMARK_DATA.overall.score,
+  skills: BENCHMARK_DATA.skills.score,
+  experience: BENCHMARK_DATA.experience.score,
+  knowledge: BENCHMARK_DATA.knowledge.score,
+  community: BENCHMARK_DATA.community.score
 };
 
 // Question mappings to SEAK categories
@@ -102,7 +105,7 @@ export const compareWithBenchmarks = (userScores) => {
   return comparisons;
 };
 
-// Generate personalized feedback
+// Generate personalized feedback using benchmark data
 export const generateFeedback = (comparisons, demographics, experiences) => {
   const feedback = {
     summary: '',
@@ -112,51 +115,30 @@ export const generateFeedback = (comparisons, demographics, experiences) => {
   };
   
   // Generate summary based on overall performance
-  if (comparisons.overall.level === 'higher') {
-    feedback.summary = "Your death literacy is above the Australian national average. You demonstrate strong knowledge and skills in end-of-life matters.";
-  } else if (comparisons.overall.level === 'lower') {
-    feedback.summary = "Your death literacy is below the Australian national average. There are opportunities to develop your knowledge and skills in end-of-life matters.";
-  } else {
-    feedback.summary = "Your death literacy is similar to the Australian national average. You have a good foundation with room for growth.";
-  }
+  const overallLevel = comparisons.overall.level;
+  feedback.summary = FEEDBACK_TEMPLATES[overallLevel].overall;
   
-  // Identify strengths
+  // Identify strengths and improvements using templates
   Object.keys(comparisons).forEach(category => {
-    if (category !== 'overall' && comparisons[category].level === 'higher') {
+    if (category !== 'overall') {
+      const level = comparisons[category].level;
       const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-      feedback.strengths.push(`${categoryName}: You scored well above average in this area`);
+      
+      if (level === 'higher') {
+        feedback.strengths.push(`${categoryName}: ${FEEDBACK_TEMPLATES.higher[category]}`);
+      } else if (level === 'lower') {
+        feedback.improvements.push(`${categoryName}: ${FEEDBACK_TEMPLATES.lower[category]}`);
+      }
     }
   });
   
-  // Identify improvement areas
-  Object.keys(comparisons).forEach(category => {
-    if (category !== 'overall' && comparisons[category].level === 'lower') {
-      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
-      feedback.improvements.push(`${categoryName}: This area could benefit from further development`);
-    }
-  });
-  
-  // Generate recommendations
-  if (comparisons.skills?.level === 'lower') {
-    feedback.recommendations.push("Consider taking a first aid course or volunteering with hospice services to develop practical care skills");
-  }
-  
-  if (comparisons.knowledge?.level === 'lower') {
-    feedback.recommendations.push("Learn about advance care planning, wills, and end-of-life legal processes");
-  }
-  
-  if (comparisons.community?.level === 'lower') {
-    feedback.recommendations.push("Explore community support services and build connections with local grief support groups");
-  }
-  
-  if (comparisons.experience?.level === 'lower') {
-    feedback.recommendations.push("Consider attending death cafes or grief education workshops to normalize discussions about death");
-  }
+  // Generate personalized recommendations
+  feedback.recommendations = getPersonalizedRecommendations(comparisons, demographics);
   
   return feedback;
 };
 
-// Calculate social connection score (Q15)
+// Calculate social connection score (Q15) using benchmark
 export const calculateSocialConnectionScore = (answers) => {
   const socialQuestions = ['Q15_1', 'Q15_2', 'Q15_3', 'Q15_4'];
   let total = 0;
@@ -169,5 +151,13 @@ export const calculateSocialConnectionScore = (answers) => {
     }
   });
   
-  return count > 0 ? total / count : 0;
+  const averageScore = count > 0 ? total / count : 0;
+  const benchmark = BENCHMARK_DATA.socialConnection.score;
+  
+  return {
+    score: averageScore,
+    benchmark: benchmark,
+    level: averageScore > benchmark + 0.5 ? 'higher' : 
+           averageScore < benchmark - 0.5 ? 'lower' : 'similar'
+  };
 };
