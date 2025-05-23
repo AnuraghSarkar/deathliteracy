@@ -73,6 +73,7 @@ const AssessmentPage = () => {
   const [demographics, setDemographics] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
 
   // Fetch questions from database
   useEffect(() => {
@@ -215,6 +216,43 @@ const AssessmentPage = () => {
   const currentQuestionData = getCurrentQuestion();
   const currentQuestion = currentQuestionData?.question;
 
+  // Validation function
+  const isCurrentQuestionAnswered = () => {
+    if (!currentQuestion) return true;
+
+    if (currentQuestion.type === 'grid') {
+      // For grid questions, check if all sub-questions are answered
+      return currentQuestion.subQuestions.every(subQ => 
+        answers[subQ.id] && answers[subQ.id].trim() !== ''
+      );
+    } else if (currentQuestion.type === 'info') {
+      // Info questions don't require answers
+      return true;
+    } else {
+      // For single questions, check if answered
+      const answer = answers[currentQuestion.id];
+      return answer && answer.trim() !== '';
+    }
+  };
+
+  // Calculate progress correctly
+  const getVisibleQuestions = () => {
+    return questions.filter(q => shouldShowQuestion(q));
+  };
+
+  const visibleQuestions = getVisibleQuestions();
+  const currentVisibleIndex = visibleQuestions.findIndex(q => q.id === currentQuestion?.id);
+  const progress = visibleQuestions.length > 0 && currentVisibleIndex >= 0
+    ? ((currentVisibleIndex + 1) / visibleQuestions.length) * 100 
+    : 0;
+
+  console.log('Progress Debug:', {
+    totalVisible: visibleQuestions.length,
+    currentIndex: currentVisibleIndex,
+    currentQuestionId: currentQuestion?.id,
+    progress: progress
+  });
+
   const handleAnswerChange = (questionId, value, isGrid = false) => {
     if (isGrid) {
       setAnswers(prev => ({
@@ -249,6 +287,15 @@ const AssessmentPage = () => {
   };
 
   const nextQuestion = () => {
+    // Clear previous validation error
+    setValidationError('');
+    
+    // Validate current question before proceeding
+    if (!isCurrentQuestionAnswered()) {
+      setValidationError('Please answer this question before proceeding.');
+      return;
+    }
+
     let nextIndex = currentQuestionIndex + 1;
     
     // Find next visible question
@@ -260,6 +307,9 @@ const AssessmentPage = () => {
   };
 
   const prevQuestion = () => {
+    // Clear validation error when going back
+    setValidationError('');
+    
     let prevIndex = currentQuestionIndex - 1;
     
     // Find previous visible question
@@ -273,6 +323,34 @@ const AssessmentPage = () => {
   };
 
   const completeAssessment = () => {
+    // Clear previous validation error
+    setValidationError('');
+    
+    // Validate current question before completing
+    if (!isCurrentQuestionAnswered()) {
+      setValidationError('Please answer this question before completing the assessment.');
+      return;
+    }
+
+    // Check if all visible questions are answered
+    const unansweredQuestions = visibleQuestions.filter(q => {
+      if (q.type === 'grid') {
+        return !q.subQuestions.every(subQ => 
+          answers[subQ.id] && answers[subQ.id].trim() !== ''
+        );
+      } else if (q.type === 'info') {
+        return false; // Info questions don't need answers
+      } else {
+        const answer = answers[q.id];
+        return !answer || answer.trim() === '';
+      }
+    });
+
+    if (unansweredQuestions.length > 0) {
+      setValidationError(`Please answer all questions. You have ${unansweredQuestions.length} unanswered questions.`);
+      return;
+    }
+
     navigate('/results', { 
       state: { 
         answers,
@@ -436,7 +514,7 @@ const AssessmentPage = () => {
       <div className="assessment-container">
         <div className="completion">
           <h2>Assessment Complete!</h2>
-          <p>You have completed all {questions.length} questions.</p>
+          <p>You have completed all {visibleQuestions.length} questions.</p>
           <button className="btn-primary btn-large" onClick={completeAssessment}>
             View Results
           </button>
@@ -445,9 +523,6 @@ const AssessmentPage = () => {
     );
   }
 
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-  const visibleQuestions = questions.filter(q => shouldShowQuestion(q));
-
   return (
     <div className="assessment-container">
       <div className="assessment-header">
@@ -455,16 +530,23 @@ const AssessmentPage = () => {
           <div className="progress-bar">
             <div 
               className="progress-fill"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${Math.max(progress, 4)}%` }}
+              title={`Progress: ${progress.toFixed(1)}%`}
             ></div>
           </div>
           <div className="progress-text">
-            Question {currentQuestionIndex + 1} of {questions.length}
+            Question {currentVisibleIndex + 1} of {visibleQuestions.length} ({progress.toFixed(1)}%)
           </div>
         </div>
       </div>
 
       <div className="assessment-content">
+        {validationError && (
+          <div className="validation-error">
+            <span className="error-icon">!</span>
+            {validationError}
+          </div>
+        )}
         {renderQuestion()}
       </div>
 

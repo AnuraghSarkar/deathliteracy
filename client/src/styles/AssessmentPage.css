@@ -68,7 +68,35 @@
   transition: color 0.3s ease;
 }
 
-/* Question Card - Auto-fitting content */
+/* Validation Error Styling - Better Design */
+.validation-error {
+  background-color: #FEF2F2;
+  color: var(--primary);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error-icon {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+/* Dark mode validation error */
+.dark-mode .validation-error {
+  background-color: rgba(204, 41, 54, 0.1);
+  color: #FCA5A5;
+  border-left-color: #FCA5A5;
+}
+
+/* Question Content - Better Layout */
 .assessment-content {
   background-color: var(--card-bg);
   border-radius: 8px;
