@@ -434,6 +434,338 @@
   background: rgba(185, 28, 28, 0.2);
   color: #ef4444;
 }
+.results-actions {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: var(--box-shadow);
+  transition: background-color 0.3s ease;
+}
+
+.download-options {
+  margin-bottom: 2rem;
+}
+
+.download-options h3 {
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.download-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 60px;
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+}
+
+.navigation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Enhanced Score Visualization */
+.score-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 1rem auto;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--primary) 0deg,
+    var(--primary) calc(var(--progress, 0) * 3.6deg),
+    var(--border-color) calc(var(--progress, 0) * 3.6deg),
+    var(--border-color) 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  background: var(--card-bg);
+  border-radius: 50%;
+}
+
+.score-number,
+.score-max {
+  position: relative;
+  z-index: 1;
+  font-weight: bold;
+}
+
+.score-number {
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.score-max {
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+/* Enhanced Category Cards */
+.category-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--primary);
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-card h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.category-score {
+  margin-bottom: 1rem;
+}
+
+.category-score .score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-dark);
+  transition: color 0.3s ease;
+}
+
+.score-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+  position: relative;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 4px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.score-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary-dark);
+  border-radius: 0 4px 4px 0;
+}
+
+.benchmark {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+/* Level Indicators */
+.level-indicator {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.level-indicator.higher {
+  background: #d4edda;
+  color: #155724;
+}
+
+.level-indicator.similar {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.level-indicator.lower {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Dark mode support */
+.dark-mode .level-indicator.higher {
+  background: rgba(40, 167, 69, 0.2);
+  color: #90ee90;
+}
+
+.dark-mode .level-indicator.similar {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffd700;
+}
+
+.dark-mode .level-indicator.lower {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ffb3b3;
+}
+
+/* Enhanced Feedback Sections */
+.feedback-section {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: var(--box-shadow);
+  transition: background-color 0.3s ease;
+}
+
+.feedback-summary {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--background);
+  border-radius: 6px;
+  border-left: 4px solid var(--primary);
+  transition: background-color 0.3s ease;
+}
+
+.strengths,
+.improvements,
+.recommendations {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border-radius: 6px;
+}
+
+.strengths {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+}
+
+.improvements {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+}
+
+.recommendations {
+  background: #cce5ff;
+  border-left: 4px solid #007bff;
+}
+
+.dark-mode .strengths {
+  background: rgba(40, 167, 69, 0.1);
+  color: #90ee90;
+}
+
+.dark-mode .improvements {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffd700;
+}
+
+.dark-mode .recommendations {
+  background: rgba(0, 123, 255, 0.1);
+  color: #87ceeb;
+}
+
+/* Enhanced Educational Resources */
+.educational-resources {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: var(--box-shadow);
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.resource-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.resource-links a {
+  display: block;
+  padding: 1rem;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.resource-links a:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .download-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .navigation-actions {
+    flex-direction: column;
+  }
+  
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .resource-links {
+    grid-template-columns: 1fr;
+  }
+  
+  .score-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .score-circle::before {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .score-number {
+    font-size: 1.5rem;
+  }
+}
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
@@ -479,3 +811,4 @@
     max-width: 250px;
   }
 }
+
