@@ -464,26 +464,6 @@
     margin-top: 2rem;
   }
   
-  .progress-container {
-    margin-bottom: 2rem;
-    position: relative;
-  }
-  
-  .progress-bar {
-    height: 8px;
-    background-color: var(--primary);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-  }
-  
-  .progress-text {
-    text-align: right;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-    color: var(--text-light);
-    transition: color 0.3s ease;
-  }
-  
   .question-card {
     background-color: var(--card-bg);
     border-radius: 8px;
@@ -780,33 +760,6 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
-  
-  .error-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    background-color: #FEE2E2;
-    color: #DC2626;
-    font-size: 2rem;
-    font-weight: bold;
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-  }
-  
-  .error-container h2 {
-    color: var(--text-dark);
-    margin-bottom: 1rem;
-    transition: color 0.3s ease;
-  }
-  
-  .error-container p {
-    color: var(--text-light);
-    margin-bottom: 2rem;
-    transition: color 0.3s ease;
-  }
-  
   /* Mobile Responsiveness */
   @media (max-width: 768px) {
     /* Mobile menu */
