@@ -7,11 +7,13 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
-    totalUsers: 125,
-    totalAssessments: 98,
-    averageScore: 72,
-    completionRate: 68,
+    totalUsers: 0,
+    totalAssessments: 0,
+    averageScore: 0,
+    completionRate: 0,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Questions management state
   const [questions, setQuestions] = useState([]);
@@ -36,40 +38,7 @@ const AdminDashboard = () => {
   const [generatedReport, setGeneratedReport] = useState(null);
 
   // Users management state
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      username: "user1",
-      email: "user1@example.com",
-      role: "individual",
-      joined: "2024-04-15",
-      assessments: 3,
-    },
-    {
-      id: 2,
-      username: "researcher1",
-      email: "researcher1@example.com",
-      role: "researcher",
-      joined: "2024-04-10",
-      assessments: 1,
-    },
-    {
-      id: 3,
-      username: "admin",
-      email: "admin@example.com",
-      role: "admin",
-      joined: "2024-04-01",
-      assessments: 2,
-    },
-    {
-      id: 4,
-      username: "user2",
-      email: "user2@example.com",
-      role: "individual",
-      joined: "2024-04-18",
-      assessments: 0,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("all");
 
@@ -84,11 +53,40 @@ const AdminDashboard = () => {
     // navigate('/login');
     // }
     
-    // Load questions when component mounts
+    // Load initial data
+    loadDashboardData();
     loadQuestions();
+    loadUsers();
   }, [navigate]);
 
+  // Load dashboard stats
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      // Try to get real data, fallback to mock data if API not yet implemented
+      try {
+        const dashboardStats = await adminService.getDashboardStats();
+        setStats(dashboardStats);
+      } catch (error) {
+        console.log("Using mock dashboard data");
+        // Use mock data as fallback
+        setStats({
+          totalUsers: 125,
+          totalAssessments: 98,
+          averageScore: 72,
+          completionRate: 68,
+        });
+      }
+    } catch (err) {
+      setError(err.message || "Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load questions
   const loadQuestions = async () => {
+    setIsLoading(true);
     try {
       const response = await adminService.getQuestions();
       
@@ -105,6 +103,69 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Failed to load questions:", error);
       // Keep existing mock data if API fails
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load users
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await adminService.getUsers();
+      
+      // Transform API data to match component data structure
+      const formattedUsers = response.map(user => ({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        joined: new Date(user.createdAt).toISOString().split('T')[0],
+        assessments: user.assessments?.length || 0,
+      }));
+      
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error("Failed to load users:", error);
+      // Keep existing mock data if API fails
+      if (users.length === 0) {
+        setUsers([
+          {
+            id: 1,
+            username: "user1",
+            email: "user1@example.com",
+            role: "individual",
+            joined: "2024-04-15",
+            assessments: 3,
+          },
+          {
+            id: 2,
+            username: "researcher1",
+            email: "researcher1@example.com",
+            role: "researcher",
+            joined: "2024-04-10",
+            assessments: 1,
+          },
+          {
+            id: 3,
+            username: "admin",
+            email: "admin@example.com",
+            role: "admin",
+            joined: "2024-04-01",
+            assessments: 2,
+          },
+          {
+            id: 4,
+            username: "user2",
+            email: "user2@example.com",
+            role: "individual",
+            joined: "2024-04-18",
+            assessments: 0,
+          },
+        ]);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -144,20 +205,36 @@ const AdminDashboard = () => {
   };
 
   // Handle showing the form for editing an existing question
-  const handleEditQuestion = (question) => {
+  const handleEditQuestion = async (question) => {
     setCurrentQuestion(question);
-    // In a real app, you would fetch the full question details here
-    setFormData({
-      text: question.text,
-      type: question.type,
-      category: question.category,
-      options: Array(question.options)
-        .fill()
-        .map((_, i) => ({
-          value: `option${i + 1}`,
-          label: `Option ${i + 1}`,
-        })),
-    });
+    try {
+      // Fetch the full question details from the API
+      const questionDetails = await adminService.getQuestionById(question.id);
+      
+      setFormData({
+        text: questionDetails.text,
+        type: questionDetails.type,
+        category: questionDetails.category,
+        options: questionDetails.options.length > 0 
+          ? questionDetails.options 
+          : [{ value: "", label: "" }, { value: "", label: "" }],
+      });
+    } catch (error) {
+      console.error("Failed to fetch question details:", error);
+      // Fallback to using the limited data from the list
+      setFormData({
+        text: question.text,
+        type: question.type,
+        category: question.category,
+        options: Array(question.options)
+          .fill()
+          .map((_, i) => ({
+            value: `option${i + 1}`,
+            label: `Option ${i + 1}`,
+          })),
+      });
+    }
+    
     setShowQuestionForm(true);
   };
 
@@ -254,12 +331,15 @@ const AdminDashboard = () => {
   };
 
   // Handle generating report
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
     setGeneratingReport(true);
 
-    // Simulate API call with a delay
-    setTimeout(() => {
-      // Generate mock report data based on report type
+    try {
+      const report = await adminService.generateReport(reportType, dateRange);
+      setGeneratedReport(report);
+    } catch (error) {
+      console.error("Failed to generate report:", error);
+      // Fallback to mock data
       const mockReport = {
         type: reportType,
         dateRange: dateRange,
@@ -290,10 +370,10 @@ const AdminDashboard = () => {
           ],
         },
       };
-
       setGeneratedReport(mockReport);
+    } finally {
       setGeneratingReport(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -340,6 +420,10 @@ const AdminDashboard = () => {
           <h1>Death Literacy Assessment Administration</h1>
         </div>
         <div className="content-body">
+          {isLoading && <div className="loading-indicator">Loading data...</div>}
+          
+          {error && <div className="error-message">{error}</div>}
+          
           {activeTab === "overview" && (
             <div className="dashboard-overview">
               <h2>Dashboard Overview</h2>
@@ -495,43 +579,47 @@ const AdminDashboard = () => {
               </div>
 
               <div className="questions-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Question</th>
-                      <th>Type</th>
-                      <th>Category</th>
-                      <th>Options</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredQuestions.map((question) => (
-                      <tr key={question.id}>
-                        <td>{question.text}</td>
-                        <td>{question.type}</td>
-                        <td>{question.category}</td>
-                        <td>{question.options}</td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              className="btn-edit"
-                              onClick={() => handleEditQuestion(question)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn-delete"
-                              onClick={() => handleDeleteQuestion(question.id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+                {questions.length === 0 ? (
+                  <div className="no-data-message">No questions found. Add your first question!</div>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Question</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Options</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredQuestions.map((question) => (
+                        <tr key={question.id}>
+                          <td>{question.text}</td>
+                          <td>{question.type}</td>
+                          <td>{question.category}</td>
+                          <td>{question.options}</td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                className="btn-edit"
+                                onClick={() => handleEditQuestion(question)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="btn-delete"
+                                onClick={() => handleDeleteQuestion(question.id)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}
@@ -764,8 +852,7 @@ const AdminDashboard = () => {
                         value={option.value}
                         onChange={(e) =>
                           handleOptionChange(index, "value", e.target.value)
-                        }
-                        required
+                        }required
                       />
                       <input
                         type="text"
@@ -816,4 +903,5 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
 export default AdminDashboard;

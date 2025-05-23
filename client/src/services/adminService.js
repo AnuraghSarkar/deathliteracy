@@ -32,6 +32,15 @@ export const getQuestions = async () => {
   }
 };
 
+export const getQuestionById = async (id) => {
+  try {
+    const response = await API.get(`/questions/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch question');
+  }
+};
+
 export const createQuestion = async (questionData) => {
   try {
     const response = await API.post('/questions', questionData);
@@ -59,12 +68,48 @@ export const deleteQuestion = async (id) => {
   }
 };
 
+// Dashboard stats
+export const getDashboardStats = async () => {
+  try {
+    const response = await API.get('/admin/dashboard');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch dashboard stats');
+  }
+};
+
+// Admin user management
+export const getUsers = async () => {
+  try {
+    const response = await API.get('/admin/users');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch users');
+  }
+};
+
+// Reports
+export const generateReport = async (reportType, dateRange) => {
+  try {
+    const response = await API.get('/admin/reports', { 
+      params: { type: reportType, dateRange } 
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to generate report');
+  }
+};
+
 // Create the service object
 const adminService = {
   getQuestions,
+  getQuestionById,
   createQuestion,
   updateQuestion,
-  deleteQuestion
+  deleteQuestion,
+  getDashboardStats,
+  getUsers,
+  generateReport
 };
 
 // Export the service
