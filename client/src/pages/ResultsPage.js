@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { 
   calculateOverallScore, 
   compareWithBenchmarks, 
@@ -30,17 +31,61 @@ const ResultsPage = () => {
     const socialConnection = calculateSocialConnectionScore(answers);
     const feedback = generateFeedback(comparisons, demographics, answers);
 
-    setResults({
+    const resultsData = {
       userScores,
       comparisons,
       socialConnection,
       feedback,
       answers,
       demographics
-    });
+    };
+
+    setResults(resultsData);
+    
+    // Save assessment results to backend
+    saveAssessmentResults(resultsData);
     
     setLoading(false);
   }, [location.state, navigate]);
+
+  const saveAssessmentResults = async (resultsData) => {
+    try {
+      const assessmentData = {
+        demographics: resultsData.demographics,
+        answers: resultsData.answers,
+        scores: {
+          overall: resultsData.userScores.overall,
+          skills: resultsData.userScores.categories.skills,
+          experience: resultsData.userScores.categories.experience,
+          knowledge: resultsData.userScores.categories.knowledge,
+          community: resultsData.userScores.categories.community,
+          socialConnection: resultsData.socialConnection.score
+        },
+        comparisons: resultsData.comparisons,
+        feedback: resultsData.feedback,
+        consentToResearch: resultsData.demographics?.consentToResearch || false
+      };
+
+      // Get auth token if user is logged in
+      const userInfo = localStorage.getItem('userInfo');
+      const config = userInfo ? {
+        headers: {
+          Authorization: `Bearer ${JSON.parse(userInfo).token}`
+        }
+      } : {};
+
+      const response = await axios.post('/api/assessments', assessmentData, config);
+      
+      if (response.data.success) {
+        console.log('Assessment results saved successfully');
+        // Store assessment ID for future reference
+        localStorage.setItem('lastAssessmentId', response.data.assessmentId);
+      }
+    } catch (error) {
+      console.error('Error saving assessment results:', error);
+      // Don't show error to user - saving is optional
+    }
+  };
 
   const downloadReport = () => {
     // Create a simple text report

@@ -73,6 +73,7 @@ app.get('/auth/google/callback',
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/assessments', require('./routes/assessmentRoutes'));
 
 
 // Error handling middleware
