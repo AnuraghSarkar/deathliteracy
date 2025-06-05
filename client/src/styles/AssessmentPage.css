@@ -1,17 +1,64 @@
+:root {
+  --primary: #dc2626;
+  --border-color: #e5e7eb;
+  --card-bg: #ffffff;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --background: #f3f4f6;
+}
+
+/* Dark mode variables */
+.dark-mode {
+  --primary: #ef4444;
+  --border-color: #374151;
+  --card-bg: #1f2937;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --text-dark: #f9fafb;
+  --text-light: #9ca3af;
+  --background: #111827;
+}
+
+/* Scope all radio styles to assessment container only */
 .assessment-container {
   max-width: 800px;
   margin: 3rem auto;
   padding: 0 1.5rem;
+  background-color: var(--background);
+  color: var(--text-dark);
 }
 
-/* Loading and Error States */
+/* Reset any global ant design styles within assessment container */
+.assessment-container .ant-radio-wrapper {
+  color: var(--text-dark) !important;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.assessment-container .ant-radio-wrapper span {
+  color: var(--text-dark) !important;
+}
+
+.assessment-container .ant-radio {
+  outline: none;
+}
+
+.assessment-container .ant-radio-checked::after {
+  display: none;
+}
+
+/* Hide any stray radio buttons outside assessment */
+.ant-radio:not(.assessment-container .ant-radio) {
+  display: none !important;
+}
+
 .loading, .error, .completion {
   background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--box-shadow);
   padding: 2.5rem;
   text-align: center;
-  transition: background-color 0.3s ease;
+  color: var(--text-dark);
 }
 
 .loading-spinner {
@@ -25,16 +72,10 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
+  0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.error h2, .completion h2 {
-  color: var(--primary);
-  margin-bottom: 1rem;
-}
-
-/* Assessment Header with Progress */
 .assessment-header {
   margin-bottom: 2rem;
 }
@@ -44,7 +85,6 @@
   border-radius: 8px;
   box-shadow: var(--box-shadow);
   padding: 1.5rem;
-  transition: background-color 0.3s ease;
 }
 
 .progress-bar {
@@ -65,12 +105,10 @@
   text-align: right;
   font-size: 0.9rem;
   color: var(--text-light);
-  transition: color 0.3s ease;
 }
 
-/* Validation Error Styling */
 .validation-error {
-  background-color: #FEF2F2;
+  background-color: rgba(220, 38, 38, 0.1);
   color: var(--primary);
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -84,32 +122,17 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.error-icon {
-  font-size: 1rem;
-  color: var(--primary);
-}
-
-/* Dark mode validation error */
-.dark-mode .validation-error {
-  background-color: rgba(204, 41, 54, 0.1);
-  color: #FCA5A5;
-  border-left-color: #FCA5A5;
-}
-
-/* Question Content */
 .assessment-content {
   background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--box-shadow);
   padding: 2rem;
   margin-bottom: 2rem;
-  transition: background-color 0.3s ease;
 }
 
 .question-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   width: 100%;
 }
 
@@ -118,11 +141,9 @@
   margin-bottom: 2rem;
   color: var(--text-dark);
   line-height: 1.5;
-  transition: color 0.3s ease;
-  width: 100%;
 }
 
-/* Custom Dropdown */
+/* Custom dropdown */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -141,14 +162,13 @@
   color: var(--text-dark);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1rem;
 }
 
 .dropdown-trigger:hover,
 .dropdown-trigger.open {
   border-color: var(--primary);
-  transform: translateY(-2px);
   box-shadow: var(--box-shadow);
+  transform: translateY(-2px);
 }
 
 .dropdown-value {
@@ -210,7 +230,7 @@
 }
 
 .dropdown-option:hover {
-  background-color: rgba(204, 41, 54, 0.1);
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
 .dropdown-option.selected {
@@ -226,97 +246,114 @@
   background-color: var(--background);
 }
 
-/* Single Choice Questions */
-.options-grid {
-  display: grid;
-  gap: 0.75rem;
+/* Ant Design Radio Customization - Scoped to Assessment Container */
+.assessment-container .antd-radio-wrapper {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.option-label {
+/* Custom styling for single choice radios - Full Width Clickable */
+.assessment-container .radio-option-container {
+  width: 100%;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
   display: flex;
   align-items: center;
-  width: 100%;
   background-color: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-dark);
-  position: relative;
-}
-
-.option-label:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: var(--box-shadow);
-}
-
-.radio-input {
-  margin-right: 1rem;
-  width: 20px;
-  height: 20px;
-  accent-color: var(--primary);
-  transform: scale(1.2);
-}
-
-.option-text {
-  color: var(--text-dark);
+  padding: 1.25rem;
+  margin: 0;
+  width: 100%;
   transition: all 0.3s ease;
-  flex: 1;
+  cursor: pointer;
+  min-height: 60px;
+  pointer-events: none;
 }
 
-/* ENHANCED: Better visual feedback for selected radio buttons */
-.option-label:has(input[type="radio"]:checked) {
-  background-color: var(--primary);
+.assessment-container .radio-option-container:hover .ant-radio-wrapper.custom-radio-option {
   border-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
-.option-label:has(input[type="radio"]:checked) .option-text {
-  color: white;
+.assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option.ant-radio-wrapper-checked {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--primary);
   font-weight: 600;
 }
 
-/* FIXED: Better radio button visibility - PRIMARY COLOR BACKGROUND */
-.option-label:has(input[type="radio"]:checked) .radio-input {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border for contrast */
-  outline-offset: -2px;
-  transform: scale(1.1);
-  opacity: 1 !important; /* Force visibility */
-  background-color: var(--primary) !important;
+/* Custom styling for scale radios */
+.assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  margin: 0 0 0.5rem 0;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-/* Fallback for browsers that don't support :has() */
-.option-label.selected {
-  background-color: var(--primary);
+.assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option:hover {
   border-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
-.option-label.selected .option-text {
-  color: white;
-  font-weight: 600;
+.assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option.ant-radio-wrapper-checked {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--primary);
 }
 
-.option-label.selected .radio-input {
-  accent-color: var(--primary) !important;
-  outline: 2px solid #ffffff !important;
-  outline-offset: -2px;
-  opacity: 1 !important;
-  background-color: var(--primary) !important;
+/* Override Ant Design default radio colors - Scoped */
+.assessment-container .ant-radio-wrapper .ant-radio .ant-radio-inner {
+  border-color: var(--border-color);
+  background-color: var(--card-bg);
+  width: 18px;
+  height: 18px;
 }
 
-/* Yes/No Questions */
+.assessment-container .ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.assessment-container .ant-radio-wrapper .ant-radio-checked .ant-radio-inner::after {
+  background-color: var(--card-bg);
+  width: 8px;
+  height: 8px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.assessment-container .ant-radio-wrapper:hover .ant-radio .ant-radio-inner {
+  border-color: var(--primary);
+}
+
+/* Force text color for all radio wrapper elements */
+.assessment-container .ant-radio-wrapper,
+.assessment-container .ant-radio-wrapper span,
+.assessment-container .ant-radio + span {
+  color: var(--text-dark) !important;
+}
+
+.assessment-container .antd-radio-wrapper .ant-space-vertical {
+  width: 100%;
+}
+
+.assessment-container .antd-radio-wrapper .ant-space-item {
+  width: 100%;
+}
+
+/* YES/NO BUTTONS - Keep original styling with dark mode support */
 .yesno-options {
   display: flex;
   gap: 1rem;
@@ -329,20 +366,722 @@
   flex: 1;
   padding: 1rem 2rem;
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
+  transition: all 0.3s ease;
   color: var(--text-dark);
 }
 
 .yesno-btn:hover {
   border-color: var(--primary);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.yesno-btn.selected {
+  background-color: var(--primary);
+  color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+/* GRID QUESTIONS with Ant Design - Scoped */
+.assessment-container .grid-question {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.assessment-container .grid-header {
+  display: flex;
+  background-color: var(--primary);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  align-items: center;
+}
+
+.assessment-container .grid-question-header {
+  flex: 3;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.assessment-container .grid-option-header {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+  min-width: 60px;
+}
+
+.assessment-container .grid-option-header:last-child {
+  border-right: none;
+}
+
+.assessment-container .grid-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  min-height: 70px;
+}
+
+.assessment-container .grid-row:last-child {
+  border-bottom: none;
+}
+
+.assessment-container .grid-row:nth-child(even) {
+  background-color: var(--background);
+}
+
+.assessment-container .grid-question-text {
+  flex: 3;
+  padding: 1rem 0.75rem;
+  font-weight: normal;
+  color: var(--text-dark);
+  border-right: 1px solid var(--border-color);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.assessment-container .grid-options {
+  display: flex;
+  flex: auto;
+}
+
+.assessment-container .grid-radio-cell {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  border-right: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  min-width: 60px;
+  cursor: pointer;
+  position: relative;
+}
+
+.assessment-container .grid-radio-cell:last-child {
+  border-right: none;
+}
+
+.assessment-container .grid-radio-cell:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+/* Style for selected grid cell */
+.assessment-container .grid-radio-cell:has(.ant-radio-checked) {
+  background-color: var(--primary) !important;
+}
+
+.assessment-container .grid-radio-cell:has(.ant-radio-checked) .ant-radio .ant-radio-inner {
+  border-color: white !important;
+  background-color: white !important;
+}
+
+.assessment-container .grid-radio-cell:has(.ant-radio-checked) .ant-radio-checked .ant-radio-inner::after {
+  background-color: var(--primary) !important;
+}
+
+.assessment-container .grid-radio-cell .ant-radio-wrapper {
+  margin: 0;
+  pointer-events: none;
+}
+
+.assessment-container .grid-radio-cell .ant-radio {
+  margin: 0;
+}
+
+.info-content {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.info-content h2 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.info-description {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.assessment-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
   box-shadow: var(--box-shadow);
+}
+
+.nav-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.category-tag {
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.subcategory-tag {
+  background-color: var(--border-color);
+  color: var(--text-light);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.assessment-navigation .btn-primary,
+.assessment-navigation .btn-secondary,
+.completion .btn-primary,
+.error .btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assessment-navigation .btn-primary:hover,
+.completion .btn-primary:hover,
+.error .btn-primary:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.assessment-navigation .btn-secondary {
+  background-color: transparent;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.assessment-navigation .btn-secondary:hover {
+  background-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.assessment-navigation .btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.state-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.state-label {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 1rem;
+}
+
+.state-select-simple {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  color: var(--text-dark);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+}
+
+.state-select-simple:hover {
+  border-color: var(--primary);
+}
+
+.state-select-simple:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .assessment-container {
+    margin: 1rem auto;
+    padding: 0 0.75rem;
+    max-width: 100%;
+  }
+
+  .assessment-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-section {
+    padding: 1rem;
+  }
+
+  .assessment-content {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .question-content h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+  }
+
+  .assessment-container .antd-radio-wrapper {
+    max-width: 100%;
+  }
+
+  .assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
+    padding: 0.875rem 1rem;
+  }
+
+  .assessment-container .grid-header {
+    display: none;
+  }
+
+  .assessment-container .grid-row {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    min-height: auto;
+  }
+
+  .assessment-container .grid-question-text {
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 0 1rem 0;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .assessment-container .grid-options {
+    flex: none;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .assessment-container .grid-radio-cell {
+    flex: none;
+    min-width: 70px;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .assessment-container .grid-radio-cell::before {
+    content: attr(data-label);
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .yesno-options {
+    flex-direction: column;
+    max-width: 100%;
+    gap: 0.75rem;
+  }
+
+  .yesno-btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .assessment-navigation {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .nav-info {
+    order: -1;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .assessment-navigation .btn-primary,
+  .assessment-navigation .btn-secondary {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .custom-dropdown {
+    max-width: 100%;
+  }
+
+  .dropdown-trigger {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .assessment-container {
+    margin: 0.5rem auto;
+    padding: 0 0.5rem;
+  }
+
+  .assessment-content {
+    padding: 1rem;
+  }
+
+  .question-content h2 {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
+    padding: 0.875rem;
+  }
+
+  .assessment-container .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
+    padding: 0.75rem;
+  }
+
+  .assessment-container .grid-radio-cell {
+    min-width: 60px;
+    padding: 0.5rem;
+  }
+
+  .yesno-btn {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .assessment-navigation {
+    padding: 0.875rem;
+  }
+
+  .state-select-wrapper {
+    max-width: 100%;
+  }
+
+  .assessment-navigation .btn-primary,
+  .assessment-navigation .btn-secondary {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+.loading, .error, .completion {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.assessment-header {
+  margin-bottom: 2rem;
+}
+
+.progress-section {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  padding: 1.5rem;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.validation-error {
+  background-color: #FEF2F2;
+  color: var(--primary);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.assessment-content {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.question-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.question-content h2 {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+  line-height: 1.5;
+}
+
+/* Custom dropdown */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-trigger:hover,
+.dropdown-trigger.open {
+  border-color: var(--primary);
+  box-shadow: var(--box-shadow);
+  transform: translateY(-2px);
+}
+
+.dropdown-value {
+  flex: 1;
+  text-align: left;
+}
+
+.dropdown-arrow {
+  margin-left: 0.5rem;
+  transition: transform 0.3s ease;
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.dropdown-trigger.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.dropdown-search {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.dropdown-search:focus {
+  outline: none;
+  background-color: var(--background);
+}
+
+.dropdown-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: var(--text-dark);
+}
+
+.dropdown-option:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.dropdown-option.selected {
+  background-color: var(--primary);
+  color: white;
+}
+
+.dropdown-more {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-style: italic;
+  background-color: var(--background);
+}
+
+/* Ant Design Radio Customization */
+.antd-radio-wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Custom styling for single choice radios - Full Width Clickable */
+.radio-option-container {
+  width: 100%;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
+  display: flex;
+  align-items: center;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 0;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 60px;
+  pointer-events: none;
+}
+
+.radio-option-container:hover .ant-radio-wrapper.custom-radio-option {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-radio-option.ant-radio-wrapper-checked {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+.antd-radio-wrapper .ant-space-vertical {
+  width: 100%;
+}
+
+.antd-radio-wrapper .ant-space-item {
+  width: 100%;
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-radio-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-radio-option.ant-radio-wrapper-checked {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* YES/NO BUTTONS - Keep original styling */
+.yesno-options {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 400px;
+}
+
+.yesno-btn {
+  flex: 1;
+  padding: 1rem 2rem;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-dark);
+}
+
+.yesno-btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
 .yesno-btn.selected {
@@ -351,91 +1090,51 @@
   border-color: var(--primary);
 }
 
-/* Scale Questions */
-.scale-options {
-  display: grid;
-  gap: 0.5rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.scale-option {
+/* Custom styling for scale radios */
+.antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;
+  background-color: var(--card-bg);
+  margin: 0 0 0.5rem 0;
+  width: 100%;
+  transition: all 0.3s ease;
   cursor: pointer;
-  transition: all 0.2s ease;
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-scale-option:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.antd-radio-wrapper .ant-radio-wrapper.custom-scale-option.ant-radio-wrapper-checked {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: var(--primary);
+}
+
+/* Override Ant Design default radio colors */
+.ant-radio-wrapper .ant-radio .ant-radio-inner {
+  border-color: var(--border-color);
   background-color: var(--card-bg);
 }
 
-.scale-option:hover {
+.ant-radio-wrapper .ant-radio-checked .ant-radio-inner {
   border-color: var(--primary);
-  transform: translateY(-1px);
-}
-
-.scale-input {
-  margin-right: 0.75rem;
-  width: 20px;
-  height: 20px;
-  accent-color: var(--primary);
-  transform: scale(1.2);
-}
-
-.scale-label {
-  color: var(--text-dark);
-  transition: color 0.3s ease;
-  flex: 1;
-}
-
-/* ENHANCED: Better visual feedback for selected scale options */
-.scale-option:has(input[type="radio"]:checked) {
   background-color: var(--primary);
+}
+
+.ant-radio-wrapper .ant-radio-checked .ant-radio-inner::after {
+  background-color: white;
+}
+
+.ant-radio-wrapper:hover .ant-radio .ant-radio-inner {
   border-color: var(--primary);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
 }
 
-.scale-option:has(input[type="radio"]:checked) .scale-label {
-  color: white;
-  font-weight: 600;
-}
-
-/* FIXED: Better scale radio button visibility - PRIMARY COLOR */
-.scale-option:has(input[type="radio"]:checked) .scale-input {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border */
-  outline-offset: -2px;
-  transform: scale(1.1);
-  opacity: 1 !important; /* Force visibility */
-  background-color: var(--primary) !important;
-}
-
-/* Fallback for browsers that don't support :has() */
-.scale-option.selected {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
-}
-
-.scale-option.selected .scale-label {
-  color: white;
-  font-weight: 600;
-}
-
-.scale-option.selected .scale-input {
-  accent-color: var(--primary) !important;
-  outline: 2px solid #ffffff !important;
-  outline-offset: -2px;
-  opacity: 1 !important;
-  background-color: var(--primary) !important;
-}
-
-/* FIXED GRID QUESTIONS - Dynamic Column Layout */
+/* GRID QUESTIONS with Ant Design */
 .grid-question {
   width: 100%;
   border-radius: 8px;
@@ -503,55 +1202,50 @@
   flex: auto;
 }
 
-.grid-option {
+.grid-radio-cell {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 1rem 0.5rem;
   border-right: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  min-width: 60px;
   cursor: pointer;
   position: relative;
-  min-width: 60px;
 }
 
-.grid-option:last-child {
+.grid-radio-cell:last-child {
   border-right: none;
 }
 
-.grid-option:hover {
-  background-color: rgba(204, 41, 54, 0.1);
+.grid-radio-cell:hover {
+  background-color: rgba(220, 38, 38, 0.1);
 }
 
-/* GRID QUESTIONS - HIGH SPECIFICITY TO OVERRIDE GLOBAL STYLES */
-.assessment-container .grid-option:has(.grid-radio:checked) {
+/* Style for selected grid cell */
+.grid-radio-cell:has(.ant-radio-checked) {
   background-color: var(--primary) !important;
 }
 
-.assessment-container .grid-radio {
-  width: 22px !important;
-  height: 22px !important;
-  cursor: pointer !important;
-  accent-color: var(--primary) !important;
-  position: relative !important;
-  z-index: 1 !important;
-  opacity: 1 !important; /* Prevent disappearing */
+.grid-radio-cell:has(.ant-radio-checked) .ant-radio .ant-radio-inner {
+  border-color: white !important;
+  background-color: white !important;
 }
 
-/* FIXED: Grid radio buttons with primary color background - HIGH SPECIFICITY */
-.assessment-container .grid-option:has(.grid-radio:checked) .grid-radio {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border for contrast */
-  outline-offset: -2px !important;
-  transform: scale(1.2) !important;
-  opacity: 1 !important; /* Force visibility */
+.grid-radio-cell:has(.ant-radio-checked) .ant-radio-checked .ant-radio-inner::after {
   background-color: var(--primary) !important;
 }
 
-/* Remove the checkmark - causing conflicts */
+.grid-radio-cell .ant-radio-wrapper {
+  margin: 0;
+  pointer-events: none;
+}
 
-/* Info Questions */
+.grid-radio-cell .ant-radio {
+  margin: 0;
+}
+
 .info-content {
   text-align: center;
   padding: 2rem 0;
@@ -568,7 +1262,6 @@
   font-size: 1rem;
 }
 
-/* Assessment Navigation */
 .assessment-navigation {
   display: flex;
   justify-content: space-between;
@@ -577,7 +1270,6 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: var(--box-shadow);
-  transition: background-color 0.3s ease;
 }
 
 .nav-info {
@@ -603,18 +1295,8 @@
   font-weight: 500;
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.btn-complete {
-  background-color: #10b981;
-}
-
-.btn-complete:hover {
-  background-color: #059669;
-}
-
-/* Navigation Buttons */
 .assessment-navigation .btn-primary,
 .assessment-navigation .btn-secondary,
 .completion .btn-primary,
@@ -623,18 +1305,16 @@
   color: white;
   padding: 0.875rem 1.5rem;
   border-radius: 0.375rem;
-  text-decoration: none;
   font-weight: 500;
   border: none;
   cursor: pointer;
-  text-align: center;
   transition: all 0.2s ease;
 }
 
 .assessment-navigation .btn-primary:hover,
 .completion .btn-primary:hover,
 .error .btn-primary:hover {
-  background-color: var(--primary-dark);
+  background-color: #b91c1c;
   transform: translateY(-1px);
 }
 
@@ -655,14 +1335,46 @@
   cursor: not-allowed;
 }
 
-.assessment-navigation .btn-secondary:disabled:hover {
-  background-color: transparent;
-  transform: none;
+.state-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+  width: 100%;
 }
 
+.state-label {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  font-size: 1rem;
+}
 
+.state-select-simple {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  color: var(--text-dark);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+}
 
-/* COMPLETELY REWRITTEN MOBILE RESPONSIVENESS */
+.state-select-simple:hover {
+  border-color: var(--primary);
+}
+
+.state-select-simple:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .assessment-container {
     margin: 1rem auto;
@@ -689,9 +1401,27 @@
     line-height: 1.4;
   }
 
-  /* Mobile Grid Layout - Stack vertically */
+  .antd-radio-wrapper {
+    max-width: 100%;
+  }
+
+  .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .antd-radio-wrapper .ant-radio-button-wrapper.custom-radio-button {
+    padding: 1rem;
+    font-size: 1rem;
+    margin-right: 0.75rem;
+  }
+
+  .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
+    padding: 0.875rem 1rem;
+  }
+
   .grid-header {
-    display: none; /* Hide header on mobile */
+    display: none;
   }
 
   .grid-row {
@@ -699,6 +1429,7 @@
     padding: 1rem;
     gap: 1rem;
     border-bottom: 2px solid var(--border-color);
+    min-height: auto;
   }
 
   .grid-question-text {
@@ -718,7 +1449,7 @@
     flex-wrap: wrap;
   }
 
-  .grid-option {
+  .grid-radio-cell {
     flex: none;
     min-width: 70px;
     padding: 0.75rem;
@@ -729,58 +1460,13 @@
     gap: 0.25rem;
   }
 
-  .grid-option::before {
+  .grid-radio-cell::before {
     content: attr(data-label);
     font-size: 0.8rem;
     color: var(--text-light);
     font-weight: 500;
   }
 
-  /* Mobile single choice options */
-  .options-grid {
-    gap: 0.5rem;
-    max-width: 100%;
-  }
-
-  .option-label {
-    padding: 1rem;
-    font-size: 0.95rem;
-  }
-
-  .radio-input {
-    width: 20px;
-    height: 20px;
-    margin-right: 0.75rem;
-  }
-
-  /* Mobile yes/no options */
-  .yesno-options {
-    flex-direction: column;
-    max-width: 100%;
-    gap: 0.75rem;
-  }
-
-  .yesno-btn {
-    padding: 1rem;
-    font-size: 1rem;
-  }
-
-  /* Mobile scale options */
-  .scale-options {
-    gap: 0.5rem;
-    max-width: 100%;
-  }
-
-  .scale-option {
-    padding: 0.875rem 1rem;
-  }
-
-  .scale-input {
-    width: 20px;
-    height: 20px;
-  }
-
-  /* Mobile navigation */
   .assessment-navigation {
     flex-direction: column;
     gap: 1rem;
@@ -800,7 +1486,6 @@
     font-size: 1rem;
   }
 
-  /* Mobile dropdown */
   .custom-dropdown {
     max-width: 100%;
   }
@@ -826,35 +1511,30 @@
     margin-bottom: 1.25rem;
   }
 
-  .grid-options {
-    gap: 0.5rem;
-  }
-  
-  .grid-option {
-    min-width: 60px;
-    padding: 0.5rem;
-  }
-
-  .option-label {
+  .antd-radio-wrapper .ant-radio-wrapper.custom-radio-option {
     padding: 0.875rem;
   }
 
-  .radio-input {
-    width: 18px;
-    height: 18px;
-  }
-
-  .yesno-btn {
+  .antd-radio-wrapper .ant-radio-button-wrapper.custom-radio-button {
     padding: 0.875rem 1rem;
     font-size: 0.95rem;
   }
 
-  .scale-option {
+  .antd-radio-wrapper .ant-radio-wrapper.custom-scale-option {
     padding: 0.75rem;
+  }
+
+  .grid-radio-cell {
+    min-width: 60px;
+    padding: 0.5rem;
   }
 
   .assessment-navigation {
     padding: 0.875rem;
+  }
+
+  .state-select-wrapper {
+    max-width: 100%;
   }
 
   .assessment-navigation .btn-primary,

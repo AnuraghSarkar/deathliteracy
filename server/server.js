@@ -20,7 +20,7 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: 'http://localhost:3000', // Allow requests from React frontend
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // ← Allow all needed methods
   credentials: true
 }));
 

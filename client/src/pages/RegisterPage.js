@@ -52,19 +52,11 @@ const RegisterPage = () => {
     setLoading(true);
     setError('');
     
-    try {
-      // Add more detailed logging
-      
+    try {      
       const response = await axios.post('/api/users', formData);
       localStorage.setItem('userInfo', JSON.stringify(response.data));
-      navigate('/onboarding'); 
+      navigate('/login'); 
     } catch (err) {
-      console.error('Registration error details:', {
-        message: err.message,
-        status: err.response?.status,
-        responseData: err.response?.data,
-        stack: err.stack
-      });
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);

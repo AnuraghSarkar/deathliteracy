@@ -1,4 +1,4 @@
-/* theme.css - revised */
+/* theme.css - cleaned up to remove radio button conflicts */
 :root {
     --primary: #CC2936;
     --primary-light: #D84654;
@@ -25,7 +25,6 @@
   
   body {
     overflow-x: hidden;
-
     background-color: var(--background);
     color: var(--text-dark);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -54,7 +53,6 @@
   }
   
   .btn-signup {
-    /* Keep the same color in both modes for visibility */
     background-color: var(--primary);
     color: white;
   }
@@ -85,25 +83,11 @@
   
   /* Card and content areas in dark mode */
   .dark-mode .question-card,
-  .dark-mode .auth-form-container,
-  .dark-mode .option-item {
+  .dark-mode .auth-form-container {
     background-color: var(--card-bg);
     color: var(--text-dark);
   }
-  
-  .dark-mode .option-item {
-    border-color: #4B5563;
-  }
-  
-  .dark-mode .option-item:hover {
-    border-color: var(--primary);
-  }
-  
-  .dark-mode .option-item.selected {
-    background-color: rgba(204, 41, 54, 0.2);
-    border-color: var(--primary);
-  }
-  
+    
   /* Text adjustments for dark mode */
   .dark-mode .hero-title,
   .dark-mode .hero-subtitle,
@@ -151,35 +135,6 @@
       transparent
     );
   }
-  /* Theme transition wave effect */
-.theme-transition-wave {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.theme-transition-wave svg {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: auto;
-}
-
-.dark-mode .theme-transition-wave.dark-wave {
-  opacity: 0.15;
-  z-index: -1;
-}
-
-.theme-transition-wave.light-wave {
-  opacity: 0;
-  z-index: -1;
-}
 
 /* Custom background patterns for dark/light mode */
 body {
@@ -247,12 +202,12 @@ body {
 
 /* Footer wave styling */
 .footer-wave svg path {
-    fill: #1F2937; /* Default darker color in light mode */
+    fill: #1F2937;
     transition: fill 0.5s ease;
   }
   
   .dark-mode .footer-wave svg path {
-    fill: #b1bdcf; /* Lighter slate color in dark mode for better visibility */
+    fill: #b1bdcf;
   }
   
   body {
@@ -299,27 +254,16 @@ body {
   .dark-mode .auth-form-container {
     background-color: #1F2937;
   }
-  
-  .dark-mode .option-item {
-    background-color: #1F2937;
-    border-color: #4B5563;
-    color: #F3F4F6;
-  }
-  
-  .dark-mode .option-item.selected {
-    background-color: rgba(204, 41, 54, 0.2);
-    border-color: var(--primary);
-  }
 
 @keyframes waveColorChange {
     0% { fill: #1F2937; }
-    50% { fill: #CC2936; } /* Your primary red */
-    100% { fill: #475569; } /* Lighter slate color */
+    50% { fill: #CC2936; }
+    100% { fill: #475569; }
   }
   
   @keyframes waveColorChangeReverse {
     0% { fill: #475569; }
-    50% { fill: #CC2936; } /* Your primary red */
+    50% { fill: #CC2936; }
     100% { fill: #1F2937; }
   }
   
@@ -369,12 +313,6 @@ body {
     }
     
     .dark-mode .btn-secondary {
-      border-color: var(--border-color);
-      color: var(--text-dark);
-    }
-    
-    .dark-mode .option-item {
-      background-color: var(--card-bg);
       border-color: var(--border-color);
       color: var(--text-dark);
     }

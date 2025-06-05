@@ -17,31 +17,41 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
-  
-  const result = await login(formData.email, formData.password);  
-  // Add safety check
-  if (!result) {
-    setError('Login failed - no response');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const result = await login(formData.email, formData.password);  
+
+    // SAFETY CHECK: if login() returned nothing
+    if (!result) {
+      setError('Login failed - no response');
+      setLoading(false);
+      return;
+    }
+
+    if (result.success) {
+      const userData = result.user;
+
+      // —— NEW ADMIN REDIRECT LOGIC —— 
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        const destination = userData.hasCompletedOnboarding ? '/assessment' : '/onboarding';
+        navigate(destination);
+      }
+    } else {
+      setError(result.message);
+    }
+
     setLoading(false);
-    return;
-  }  
-  if (result.success) {
-    // Smart redirect based on onboarding status
-    const destination = result.user?.hasCompletedOnboarding ? '/assessment' : '/onboarding';
-    navigate(destination);
-  } else {
-    setError(result.message);
-  }
-  
-  setLoading(false);
-};
+  };
+
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth route for authentication
-  window.location.href = 'http://localhost:5001/api/users/google';  };
+    window.location.href = 'http://localhost:5001/api/users/google';
+  };
 
   return (
     <div className="auth-page">
