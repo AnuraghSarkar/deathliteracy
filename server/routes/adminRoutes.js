@@ -1,97 +1,163 @@
+// routes/adminRoutes.js
+
 const express = require('express');
 const router = express.Router();
-const Question = require('../models/questionModel');
 const User = require('../models/userModel');
-const { protect } = require('../middleware/authMiddleware');
+const bcrypt = require('bcrypt');
+const { protect, isAdmin } = require('../middleware/authMiddleware');
 
-// Middleware to restrict routes to admin only
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(401);
-    throw new Error('Not authorized as an admin');
-  }
-};
-
-// @desc    Get dashboard stats
-// @route   GET /api/admin/dashboard
-// @access  Private/Admin
-router.get('/dashboard', protect, admin, async (req, res) => {
+/**
+ * @route   GET /api/admin/users
+ * @desc    List all users (omit passwords)
+ * @access  Private (role === 'admin')
+ */
+router.get('/', protect, isAdmin, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const usersWithAssessments = await User.find({ 'assessments.0': { $exists: true } }).countDocuments();
-    
-    // Mock data for now - in a real app, you would calculate these from your database
-    const statsData = {
-      totalUsers,
-      totalAssessments: 98,
-      averageScore: 72,
-      completionRate: Math.round((usersWithAssessments / totalUsers) * 100) || 68,
-    };
-    
-    res.json(statsData);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Fetch all users, excluding password field
+    const users = await User.find().select('-password');
+    return res.json({ success: true, users });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// @desc    Get all users for admin
-// @route   GET /api/admin/users
-// @access  Private/Admin
-router.get('/users', protect, admin, async (req, res) => {
+/**
+ * @route   POST /api/admin/users
+ * @desc    Create a new user (with optional role)
+ * @access  Private (role === 'admin')
+ */
+router.post('/', protect, isAdmin, async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const { username, email, password, role = 'individual' } = req.body;
+
+    // Basic validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Username, email & password are required' });
+    }
+
+    // Check for existing user by email OR username
+    const existing = await User.findOne({ $or: [ { email }, { username } ] });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ message: 'User with that email or username already exists' });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(password, salt);
+
+    // Create new user document
+    const newUser = new User({
+      username: username.trim(),
+      email: email.trim().toLowerCase(),
+      password: hashed,
+      role, // must be one of ['individual','organization_admin','researcher','admin']
+      // demographics, consentToResearch, etc. can be added here as well if passed
+    });
+
+    const created = await newUser.save();
+
+    // Exclude password from returned object
+    const { password: pw, ...userData } = created.toObject();
+    return res.status(201).json({ success: true, user: userData });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// @desc    Generate reports
-// @route   GET /api/admin/reports
-// @access  Private/Admin
-router.get('/reports', protect, admin, async (req, res) => {
+/**
+ * @route   PUT /api/admin/users/:id
+ * @desc    Update an existing user by ID
+ * @access  Private (role === 'admin')
+ */
+router.put('/:id', protect, isAdmin, async (req, res) => {
   try {
-    const { type, dateRange } = req.query;
-    
-    // For now, return mock data
-    // In a real app, you would query your database based on the report type and date range
-    const mockReport = {
-      type,
-      dateRange,
-      generatedAt: new Date().toISOString(),
-      data: {
-        totalParticipants: 98,
-        averageScore: 72,
-        demographicBreakdown: {
-          "18-30": 22,
-          "31-45": 35,
-          "46-60": 28,
-          "61+": 13,
-        },
-        scoreDistribution: {
-          "Low (0-40%)": 15,
-          "Medium (41-70%)": 38,
-          "High (71-100%)": 45,
-        },
-        topStrengthAreas: [
-          "Understanding grief processes",
-          "Knowledge of funeral planning",
-          "Comfort discussing death",
-        ],
-        improvementAreas: [
-          "Legal aspects of end-of-life planning",
-          "Palliative care options",
-          "Supporting others through bereavement",
-        ],
-      },
-    };
-    
-    res.json(mockReport);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const userId = req.params.id;
+    const { username, email, password, role, demographics, consentToResearch } = req.body;
+
+    // Find user to update
+    const user = await User.findById(userId).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Only update provided fields
+    if (username) user.username = username.trim();
+    if (email) user.email = email.trim().toLowerCase();
+    if (typeof role !== 'undefined') {
+      // ensure role is one of the allowed enums
+      if (!['individual','organization_admin','researcher','admin'].includes(role)) {
+        return res.status(400).json({ message: 'Invalid role value' });
+      }
+      user.role = role;
+    }
+
+    // Optionally update demographics subdocument
+    if (demographics) {
+      user.demographics = {
+        age: demographics.age ?? user.demographics.age,
+        gender: demographics.gender ?? user.demographics.gender,
+        location: demographics.location ?? user.demographics.location,
+        culturalBackground: demographics.culturalBackground ?? user.demographics.culturalBackground,
+      };
+    }
+
+    // Optionally update consentToResearch
+    if (typeof consentToResearch !== 'undefined') {
+      user.consentToResearch = consentToResearch;
+    }
+
+    // If password was supplied, re‐hash it
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    const updated = await user.save();
+    // Exclude password before sending back
+    const { password: pw, ...updatedData } = updated.toObject();
+    return res.json({ success: true, user: updatedData });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
+/**
+ * @route   DELETE /api/admin/users/:id
+ * @desc    Delete a user by ID
+ * @access  Private (role === 'admin')
+ */
+router.delete('/:id', protect, isAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Prevent admin from deleting themselves
+    if (req.user._id.toString() === userId) {
+      return res.status(400).json({ message: 'Admin cannot delete their own account' });
+    }
+
+    // Use findByIdAndDelete directly - it returns null if not found
+    const deletedUser = await User.findByIdAndDelete(userId);
+    
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.json({ success: true, message: 'User removed' });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    
+    // Check if response has already been sent
+    if (res.headersSent) {
+      console.error('Response already sent, cannot send error response');
+      return;
+    }
+    
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;

@@ -1,5 +1,5 @@
 const User = require('../models/userModel');
-const jwt = require('jsonwebtoken'); // Ensure JWT is imported
+const jwt = require('jsonwebtoken');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -38,7 +38,6 @@ const registerUser = async (req, res) => {
         role: user.role,
         token: generateToken(user._id),
         hasCompletedOnboarding: user.hasCompletedOnboarding,
-
       });
     } else {
       return res.status(400).json({ message: 'Invalid user data' });
@@ -71,24 +70,24 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Check if the user exists by email
-    const user = await User.findOne({ email }).select('+password');  // Ensure password is included for comparison
+    const user = await User.findOne({ email }).select('+password');
 
     if (user && (await user.matchPassword(password))) {
-      // Generate JWT if the passwords match
-      res.json({
+      // FIXED: Removed the syntax error and added return
+      return res.json({
         _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
         token: generateToken(user._id),
-        hasCompletedOnboarding: user.hasCompletedOnboarding, 
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
       });
     } else {
-      res.status(401);
-      throw new Error('Invalid email or password');
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
-    res.status(401).json({ message: error.message });
+    console.error('Login error:', error);
+    return res.status(401).json({ message: error.message });
   }
 };
 
@@ -97,7 +96,6 @@ const loginUser = async (req, res) => {
 // @access  Public (Google OAuth flow)
 const googleLogin = async (req, res) => {
   try {
-    // Assuming 'req.user' is populated with the Google user after authentication
     const googleId = req.user.googleId;
     const username = req.user.username;
     const email = req.user.email;
@@ -111,8 +109,8 @@ const googleLogin = async (req, res) => {
         username,
         email,
         googleId,
-        password: Math.random().toString(36).slice(-8),  // Random password
-        role: 'user', // Default role
+        password: Math.random().toString(36).slice(-8),
+        role: 'individual', // Fixed: changed from 'user' to 'individual'
       });
 
       await user.save();
@@ -122,21 +120,21 @@ const googleLogin = async (req, res) => {
     const token = generateToken(user._id);
 
     // Send token back to frontend
-    res.json({
-    _id: user._id,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    hasCompletedOnboarding: user.hasCompletedOnboarding, 
-    token: token
-  });
+    return res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+      token: token
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Google login failed', error: error.message });
+    console.error('Google login error:', error);
+    return res.status(500).json({ message: 'Google login failed', error: error.message });
   }
 };
 
-
-// @desc    Get logged‐in user’s profile
+// @desc    Get logged‐in user's profile
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
@@ -153,25 +151,23 @@ const getUserProfile = async (req, res) => {
         hasCompletedOnboarding: user.hasCompletedOnboarding,
       });
     } else {
-      res.status(404);
-      throw new Error('User not found');
+      return res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    console.error('Get profile error:', error);
+    return res.status(404).json({ message: error.message });
   }
 };
 
-// ADD THIS: @desc    Update logged-in user’s profile
+// @desc    Update logged-in user's profile
 // @route   PUT /api/users/profile
 // @access  Private
 const updateUserProfile = async (req, res) => {
   try {
-    // req.user is from protect middleware (jwt decode)
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      res.status(404);
-      throw new Error('User not found');
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Only update fields if they were sent in req.body
@@ -179,17 +175,16 @@ const updateUserProfile = async (req, res) => {
     user.email = req.body.email ?? user.email;
     user.demographics = req.body.demographics ?? user.demographics;
     user.consentToResearch = req.body.consentToResearch ?? user.consentToResearch;
-    // You can add any other profile fields you want editable
 
     // If they included a new password, hash that too:
     if (req.body.password) {
-      user.password = req.body.password; // your pre-save hook on model will hash it
+      user.password = req.body.password;
     }
 
     const updatedUser = await user.save();
 
     // Return updated profile (minus password)
-    res.json({
+    return res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
       email: updatedUser.email,
@@ -199,7 +194,8 @@ const updateUserProfile = async (req, res) => {
       hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Update profile error:', error);
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -215,7 +211,7 @@ const completeOnboarding = async (req, res) => {
     ).select('-password');
 
     if (user) {
-      res.json({
+      return res.json({
         success: true,
         message: 'Onboarding completed successfully',
         user: {
@@ -227,10 +223,11 @@ const completeOnboarding = async (req, res) => {
         }
       });
     } else {
-      res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Complete onboarding error:', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

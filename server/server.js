@@ -81,10 +81,11 @@ app.get('/auth/google/callback',
             
       // Redirect with complete user data
       const redirectURL = `http://localhost:3000/oauth-callback?userData=${encodeURIComponent(JSON.stringify(userData))}`;
-      res.redirect(redirectURL);
+      return res.redirect(redirectURL); // ← ADD RETURN HERE
       
     } catch (error) {
-      res.redirect('http://localhost:3000/login?error=oauth_failed');
+      console.error('OAuth callback error:', error);
+      return res.redirect('http://localhost:3000/login?error=oauth_failed'); // ← ADD RETURN HERE
     }
   }
 );
@@ -92,20 +93,27 @@ app.get('/auth/google/callback',
 // Define API routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/assessments', require('./routes/assessmentRoutes'));
-
-
+app.use('/api/admin/users', require('./routes/adminRoutes'));
+app.use('/api/admin/questions', require('./routes/adminQuestionRoutes'));  // ← NEW
+app.use('/api/admin/categories', require('./routes/categoryRoutes'));       // ← NEW
+app.use('/api/admin/assessments', require('./routes/adminAssessmentRoutes'));
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error('Global error handler:', err.message);
+  
+  // Don't send response if headers already sent
+  if (res.headersSent) {
+    console.error('Error after response sent:', err.message);
+    return next(err);
+  }
+  
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  res.json({
+  res.status(statusCode).json({
     message: err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack
   });
 });
-
 // Set port
 const PORT = process.env.PORT || 5001;
 
