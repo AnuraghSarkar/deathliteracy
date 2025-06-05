@@ -2,8 +2,9 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken'); // Add this line
 const router = express.Router();
-const { registerUser, loginUser, getUserProfile } = require('../controllers/userController');
+const { registerUser, loginUser, getUserProfile, completeOnboarding } = require('../controllers/userController');  // ADD completeOnboarding
 const { protect } = require('../middleware/authMiddleware');
+const User = require('../models/userModel');
 
 // Register user
 router.post('/', registerUser);
@@ -11,24 +12,46 @@ router.post('/', registerUser);
 // Login user
 router.post('/login', loginUser);
 
-// Google OAuth route
+// Complete onboarding (protected route)  // ADD THIS ROUTE
+router.put('/complete-onboarding', protect, completeOnboarding);
+
 // Google OAuth route
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 
 // Google OAuth callback route
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    // Generate JWT token after Google login
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  async (req, res) => {
     
-    // Send the token to the frontend
-    res.redirect(`http://localhost:3000/oauth-callback?token=${token}`);
+    try {
+      // Generate JWT token after Google login
+      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+      
+      // Fetch complete user data from database (including hasCompletedOnboarding)
+      const User = require('../models/userModel');
+      const fullUser = await User.findById(req.user._id).select('-password');
+      
+      // Send complete user data (like regular login)
+      const userData = {
+        _id: fullUser._id,
+        username: fullUser.username,
+        email: fullUser.email,
+        role: fullUser.role,
+        hasCompletedOnboarding: fullUser.hasCompletedOnboarding,
+        token: token
+      };
+      
+      
+      // Redirect with complete user data
+      const redirectURL = `http://localhost:3000/oauth-callback?userData=${encodeURIComponent(JSON.stringify(userData))}`;
+      res.redirect(redirectURL);
+      
+    } catch (error) {
+      res.redirect('http://localhost:3000/login?error=oauth_failed');
+    }
   }
 );
-
 // Get user profile (protected route)
 router.get('/profile', protect, getUserProfile);
 

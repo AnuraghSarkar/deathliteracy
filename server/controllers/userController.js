@@ -36,7 +36,9 @@ const registerUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id)
+        token: generateToken(user._id),
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+
       });
     } else {
       return res.status(400).json({ message: 'Invalid user data' });
@@ -78,7 +80,8 @@ const loginUser = async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id)
+        token: generateToken(user._id),
+        hasCompletedOnboarding: user.hasCompletedOnboarding, 
       });
     } else {
       res.status(401);
@@ -119,7 +122,14 @@ const googleLogin = async (req, res) => {
     const token = generateToken(user._id);
 
     // Send token back to frontend
-    res.json({ token });
+    res.json({
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    hasCompletedOnboarding: user.hasCompletedOnboarding, 
+    token: token
+  });
   } catch (error) {
     res.status(500).json({ message: 'Google login failed', error: error.message });
   }
@@ -149,10 +159,41 @@ const getUserProfile = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+// @desc    Mark onboarding as completed
+// @route   PUT /api/users/complete-onboarding
+// @access  Private
+const completeOnboarding = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { hasCompletedOnboarding: true },
+      { new: true }
+    ).select('-password');
+
+    if (user) {
+      res.json({
+        success: true,
+        message: 'Onboarding completed successfully',
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          hasCompletedOnboarding: user.hasCompletedOnboarding
+        }
+      });
+    } else {
+      res.status(404).json({ success: false, message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 module.exports = {
   registerUser,
   loginUser,
   googleLogin,
   getUserProfile,
+  completeOnboarding,
 };

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { FaHeart, FaClipboardList, FaClock, FaUserShield, FaChartLine, FaLightbulb, FaUsers, FaArrowRight, FaCheck, FaBookOpen, FaBrain, FaComments } from 'react-icons/fa';
 import '../styles/OnboardingScreen.css';
 const OnboardingScreen = () => {
@@ -185,26 +186,36 @@ const OnboardingScreen = () => {
     }
   };
 
-  const handleStartAssessment = () => {
-    if (!consent.dataCollection || !consent.understood) {
-      alert('Please confirm your consent to data collection and understanding of the assessment before proceeding.');
-      return;
-    }
+  const handleStartAssessment = async () => {
+  if (!consent.dataCollection || !consent.understood) {
+    alert('Please confirm your consent to data collection and understanding of the assessment before proceeding.');
+    return;
+  }
 
-    // Store consent preferences
-    localStorage.setItem('assessmentConsent', JSON.stringify(consent));
+  // Store consent preferences
+  localStorage.setItem('assessmentConsent', JSON.stringify(consent));
 
-    if (isLoggedIn) {
-      navigate('/assessment');
-    } else {
-      navigate('/register', { 
-        state: { 
-          fromOnboarding: true,
-          consent: consent
-        }
+  if (isLoggedIn) {
+    // Mark onboarding as completed
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      await axios.put('/api/users/complete-onboarding', {}, {
+        headers: { Authorization: `Bearer ${userInfo.token}` }
       });
+    } catch (error) {
+      console.error('Error marking onboarding complete:', error);
     }
-  };
+    
+    navigate('/assessment');
+  } else {
+    navigate('/register', { 
+      state: { 
+        fromOnboarding: true,
+        consent: consent
+      }
+    });
+  }
+};
 
   const canProceed = () => {
     if (currentStep === steps.length - 1) {
