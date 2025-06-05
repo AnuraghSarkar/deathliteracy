@@ -711,16 +711,25 @@ Version: 2.0
           <h3>Download Your Results</h3>
           <div className="download-buttons">
             <button className="btn-primary download-btn" onClick={downloadPDFReport}>
-              <span className="btn-icon">📄</span>
-              Professional Report (HTML/PDF)
+              <div className="btn-icon">📄</div>
+              <div className="btn-content">
+                <div className="btn-title">Professional Report (HTML/PDF)</div>
+                <div className="btn-description">Beautifully formatted report ready for printing or sharing</div>
+              </div>
             </button>
             <button className="btn-secondary download-btn" onClick={downloadDetailedReport}>
-              <span className="btn-icon">📋</span>
-              Detailed Analysis (Text)
+              <div className="btn-icon">📋</div>
+              <div className="btn-content">
+                <div className="btn-title">Detailed Analysis (Text)</div>
+                <div className="btn-description">Comprehensive text report with detailed insights and recommendations</div>
+              </div>
             </button>
             <button className="btn-secondary download-btn" onClick={downloadCSVData}>
-              <span className="btn-icon">📊</span>
-              Data Export (CSV)
+              <div className="btn-icon">📊</div>
+              <div className="btn-content">
+                <div className="btn-title">Data Export (CSV)</div>
+                <div className="btn-description">Raw data export for spreadsheet analysis and record keeping</div>
+              </div>
             </button>
           </div>
         </div>
