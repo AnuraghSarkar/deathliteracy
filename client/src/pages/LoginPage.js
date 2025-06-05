@@ -24,7 +24,7 @@ const LoginPage = () => {
     try {
       const response = await axios.post('/api/users/login', formData);
       localStorage.setItem('userInfo', JSON.stringify(response.data)); // Save JWT to localStorage
-      navigate('/assessment'); // Redirect to quiz after successful login
+      navigate('/onboarding'); // Redirect to quiz after successful login
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
@@ -99,3 +99,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

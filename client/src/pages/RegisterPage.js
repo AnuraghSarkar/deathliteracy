@@ -57,7 +57,7 @@ const RegisterPage = () => {
       
       const response = await axios.post('/api/users', formData);
       localStorage.setItem('userInfo', JSON.stringify(response.data));
-      navigate('/login'); 
+      navigate('/onboarding'); 
     } catch (err) {
       console.error('Registration error details:', {
         message: err.message,
