@@ -90,7 +90,6 @@ const AssessmentPage = () => {
           setError('Failed to load questions');
         }
       } catch (error) {
-        console.error('Error fetching questions:', error);
         setError('Failed to load questions from database');
       } finally {
         setLoading(false);
@@ -162,7 +161,6 @@ const AssessmentPage = () => {
             value: c.label,
             label: c.label
           }));
-          console.log('Q1 processed as dropdown with', options.length, 'countries');
         } else if (parentQ.type === 'boolean') {
           questionType = 'yesno';
         } else if (parentQ.type === 'single_choice') {
@@ -187,8 +185,6 @@ const AssessmentPage = () => {
         });
       }
     });
-
-    console.log('Processed questions:', processedQuestions.slice(0, 5)); // Log first 5 questions
     return processedQuestions;
   };
 
@@ -245,13 +241,6 @@ const AssessmentPage = () => {
   const progress = visibleQuestions.length > 0 && currentVisibleIndex >= 0
     ? ((currentVisibleIndex + 1) / visibleQuestions.length) * 100 
     : 0;
-
-  console.log('Progress Debug:', {
-    totalVisible: visibleQuestions.length,
-    currentIndex: currentVisibleIndex,
-    currentQuestionId: currentQuestion?.id,
-    progress: progress
-  });
 
   const handleAnswerChange = (questionId, value, isGrid = false) => {
     if (isGrid) {
@@ -361,9 +350,6 @@ const AssessmentPage = () => {
 
   const renderQuestion = () => {
     if (!currentQuestion) return null;
-
-    console.log('Rendering question:', currentQuestion.id, 'Type:', currentQuestion.type, 'Options count:', currentQuestion.options?.length);
-
     switch (currentQuestion.type) {
       case 'dropdown':
         return (

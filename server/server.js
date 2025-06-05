@@ -60,12 +60,32 @@ app.get('/auth/google',
 
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    // Create JWT token for the authenticated user
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    
-    // Redirect to frontend with token
-    res.redirect(`http://localhost:3000/oauth-callback?token=${token}`);
+  async (req, res) => {    
+    try {
+      // Generate JWT token after Google login
+      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+      
+      // Fetch complete user data from database (including hasCompletedOnboarding)
+      const User = require('./models/userModel');
+      const fullUser = await User.findById(req.user._id).select('-password');
+      
+      // Send complete user data (like regular login)
+      const userData = {
+        _id: fullUser._id,
+        username: fullUser.username,
+        email: fullUser.email,
+        role: fullUser.role,
+        hasCompletedOnboarding: fullUser.hasCompletedOnboarding,
+        token: token
+      };
+            
+      // Redirect with complete user data
+      const redirectURL = `http://localhost:3000/oauth-callback?userData=${encodeURIComponent(JSON.stringify(userData))}`;
+      res.redirect(redirectURL);
+      
+    } catch (error) {
+      res.redirect('http://localhost:3000/login?error=oauth_failed');
+    }
   }
 );
 

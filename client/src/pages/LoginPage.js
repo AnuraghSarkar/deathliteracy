@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaGoogle } from 'react-icons/fa';  // For Google Icon (optional)
+import { FaGoogle } from 'react-icons/fa';
+import { useAuthContext } from '../context/AuthContext';  // ADD THIS IMPORT
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -11,31 +11,37 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuthContext(); 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await axios.post('/api/users/login', formData);
-      localStorage.setItem('userInfo', JSON.stringify(response.data)); // Save JWT to localStorage
-      navigate('/onboarding'); // Redirect to quiz after successful login
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  
+  const result = await login(formData.email, formData.password);  
+  // Add safety check
+  if (!result) {
+    setError('Login failed - no response');
+    setLoading(false);
+    return;
+  }  
+  if (result.success) {
+    // Smart redirect based on onboarding status
+    const destination = result.user?.hasCompletedOnboarding ? '/assessment' : '/onboarding';
+    navigate(destination);
+  } else {
+    setError(result.message);
+  }
+  
+  setLoading(false);
+};
   const handleGoogleLogin = () => {
     // Redirect to backend Google OAuth route for authentication
-    window.location.href = 'http://localhost:5001/auth/google';
-  };
+  window.location.href = 'http://localhost:5001/api/users/google';  };
 
   return (
     <div className="auth-page">
@@ -99,4 +105,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-

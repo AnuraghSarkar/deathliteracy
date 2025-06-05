@@ -2,24 +2,23 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
 import ThemeContext from "../context/ThemeContext";
+import { useAuthContext } from "../context/AuthContext";  // ADD THIS IMPORT
 
 const Header = () => {
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
+  const { user, logout } = useAuthContext();  // REPLACE localStorage check
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-
-  // Check if user is logged in by checking for a JWT token in localStorage
-  const isLoggedIn = localStorage.getItem("userInfo");
 
   // Handle mobile menu toggle
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // Handle sign out
+  // Handle sign out using AuthContext
   const handleSignOut = () => {
-    localStorage.removeItem("userInfo"); // Remove JWT token from localStorage
-    navigate("/login"); // Redirect to login page after signing out
+    logout();  // USE AuthContext logout method
+    navigate("/login");
   };
 
   return (
@@ -54,7 +53,7 @@ const Header = () => {
 
           {/* Auth buttons */}
           <div className="auth-buttons">
-            {isLoggedIn ? (
+            {user ? (  /* REPLACE isLoggedIn with user */
               <>
                 <Link
                   to="/profile"

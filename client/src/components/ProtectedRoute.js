@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, requireAdmin = false }) => {
+const ProtectedRoute = ({ children, requireAdmin = false, requiresOnboarding = false }) => {
   const { user, loading } = useAuthContext();
   const location = useLocation();
 
@@ -18,6 +18,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   if (!user) {
     // Redirect to login with return URL
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check onboarding requirement BEFORE admin check
+  if (requiresOnboarding && !user.hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   if (requireAdmin && user.role !== 'admin') {

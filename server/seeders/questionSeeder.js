@@ -848,9 +848,7 @@ const seedQuestions = async () => {
     console.log('Connected to MongoDB');
     
     // Clear existing questions
-    await Question.deleteMany({});
-    console.log('Cleared existing questions');
-    
+    await Question.deleteMany({});    
     // Convert and insert questions
     const questionsForDB = convertQuestionsForDB();
     const insertedQuestions = await Question.insertMany(questionsForDB);

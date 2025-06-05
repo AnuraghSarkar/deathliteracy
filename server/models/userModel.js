@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema({
   consentToResearch: {
     type: Boolean,
     default: false
+  },
+  hasCompletedOnboarding: {  // ADD THIS FIELD
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

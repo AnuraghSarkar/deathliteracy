@@ -1,19 +1,17 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeContext from '../context/ThemeContext';
+import { useAuthContext } from '../context/AuthContext';  // ADD THIS IMPORT
 import yourSvgImage from '../styles/public/images/background.svg'; // Update path if needed
 
 const HomePage = () => {
   const { darkMode, isTransitioning } = useContext(ThemeContext);
+  const { user } = useAuthContext();  // REPLACE localStorage check
   const navigate = useNavigate();
-  
-  // Check if user is logged in by checking for JWT token in localStorage
-  const isLoggedIn = localStorage.getItem('userInfo');
 
   const handleStartQuiz = () => {
-    if (isLoggedIn) {
-      // If user is logged in, navigate to the quiz
-      navigate('/assessment');
+    if (user) {  
+      navigate('/onboarding');
     } else {
       // If not logged in, redirect to the login page
       navigate('/login');
