@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  calculateOverallScore, 
-  compareWithBenchmarks, 
-  generateFeedback,
-  calculateSocialConnectionScore 
+  calculateDLIScores, 
+  compareWithDLIBenchmarks, 
+  generateDLIFeedback,
 } from '../utils/scoringSystem';
 import '../styles/ResultsPage.css';
 
@@ -15,39 +14,7 @@ const ResultsPage = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Get answers from navigation state
-    const answers = location.state?.answers;
-    const demographics = location.state?.demographics;
-    
-    if (!answers) {
-      navigate('/assessment');
-      return;
-    }
-
-    // Calculate scores
-    const userScores = calculateOverallScore(answers);
-    const comparisons = compareWithBenchmarks(userScores);
-    const socialConnection = calculateSocialConnectionScore(answers);
-    const feedback = generateFeedback(comparisons, demographics, answers);
-
-    const resultsData = {
-      userScores,
-      comparisons,
-      socialConnection,
-      feedback,
-      answers,
-      demographics
-    };
-
-    setResults(resultsData);
-    
-    // Save assessment results to backend
-    saveAssessmentResults(resultsData);
-    
-    setLoading(false);
-  }, [location.state, navigate]);
-
+  // Move all functions outside useEffect
   const saveAssessmentResults = async (resultsData) => {
     try {
       const assessmentData = {
@@ -55,11 +22,11 @@ const ResultsPage = () => {
         answers: resultsData.answers,
         scores: {
           overall: resultsData.userScores.overall,
-          skills: resultsData.userScores.categories.skills,
-          experience: resultsData.userScores.categories.experience,
-          knowledge: resultsData.userScores.categories.knowledge,
-          community: resultsData.userScores.categories.community,
-          socialConnection: resultsData.socialConnection.score
+          practicalKnowledge: resultsData.userScores.domains.practicalKnowledge,
+          experientialKnowledge: resultsData.userScores.domains.experientialKnowledge,
+          factualKnowledge: resultsData.userScores.domains.factualKnowledge,
+          communityKnowledge: resultsData.userScores.domains.communityKnowledge,
+          socialConnection: resultsData.socialConnection?.score || 0
         },
         comparisons: resultsData.comparisons,
         feedback: resultsData.feedback,
@@ -339,9 +306,9 @@ const ResultsPage = () => {
 
         <div class="score-section">
           <h2>Category Breakdown</h2>
-          ${Object.entries(results.userScores.categories).map(([category, score]) => `
+          ${Object.entries(results.userScores.domains).map(([category, score]) => `
             <div class="category">
-              <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+              <h3>${category.replace(/([A-Z])/g, ' $1').trim()}</h3>
               <div class="category-scores">
                 <div>
                   <div class="score-display">${score.toFixed(1)}/10</div>
@@ -459,7 +426,7 @@ ${results.feedback.summary}
 DETAILED CATEGORY ANALYSIS
 ================================================
 
-${Object.entries(results.userScores.categories).map(([category, score]) => `
+${Object.entries(results.userScores.domains).map(([category, score]) => `
 ${category.toUpperCase()} CATEGORY
 Your Score: ${score.toFixed(1)}/10
 National Average: ${results.comparisons[category].benchmark}/10
@@ -541,8 +508,8 @@ Version: 2.0
     const csvContent = [
       ['Category', 'Your Score', 'National Average', 'Comparison'],
       ['Overall', results.userScores.overall.toFixed(1), results.comparisons.overall.benchmark, results.comparisons.overall.level],
-      ...Object.entries(results.userScores.categories).map(([category, score]) => [
-        category.charAt(0).toUpperCase() + category.slice(1),
+      ...Object.entries(results.userScores.domains).map(([category, score]) => [
+        category.replace(/([A-Z])/g, ' $1').trim(),
         score.toFixed(1),
         results.comparisons[category].benchmark,
         results.comparisons[category].level
@@ -566,6 +533,63 @@ Version: 2.0
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  useEffect(() => {
+    // Get answers from navigation state
+    const answers = location.state?.answers;
+    const demographics = location.state?.demographics;
+    
+    if (!answers) {
+      navigate('/assessment');
+      return;
+    }
+
+    // Simple social connection calculation for Q15 questions
+    const calculateSimpleSocialConnection = (answers) => {
+      const socialQuestions = ['Q15_1', 'Q15_2', 'Q15_3', 'Q15_4'];
+      let total = 0;
+      let count = 0;
+      
+      socialQuestions.forEach(q => {
+        if (answers[q] && !isNaN(parseInt(answers[q]))) {
+          total += parseInt(answers[q]);
+          count++;
+        }
+      });
+      
+      const averageScore = count > 0 ? total / count : 0;
+      const benchmark = 3.2;
+      
+      return {
+        score: averageScore,
+        benchmark: benchmark,
+        level: averageScore > benchmark + 0.5 ? 'higher' : 
+               averageScore < benchmark - 0.5 ? 'lower' : 'similar'
+      };
+    };
+
+    // Calculate scores
+    const userScores = calculateDLIScores(answers);
+    const comparisons = compareWithDLIBenchmarks(userScores);
+    const socialConnection = calculateSimpleSocialConnection(answers);
+    const feedback = generateDLIFeedback(comparisons, demographics);
+
+    const resultsData = {
+      userScores,
+      comparisons,
+      socialConnection,
+      feedback,
+      answers,
+      demographics
+    };
+
+    setResults(resultsData);
+    
+    // Save assessment results to backend
+    saveAssessmentResults(resultsData);
+    
+    setLoading(false);
+  }, [location.state, navigate]);
 
   if (loading) {
     return (
@@ -624,9 +648,9 @@ Version: 2.0
       <div className="category-scores">
         <h2>Category Breakdown</h2>
         <div className="categories-grid">
-          {Object.entries(results.userScores.categories).map(([category, score]) => (
+          {Object.entries(results.userScores.domains).map(([category, score]) => (
             <div key={category} className="category-card">
-              <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+              <h3>{category.replace(/([A-Z])/g, ' $1').trim()}</h3>
               <div className="category-score">
                 <span className="score">{score.toFixed(1)}/10</span>
                 <div className="score-bar">

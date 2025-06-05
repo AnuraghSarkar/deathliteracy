@@ -291,7 +291,6 @@
 .onboarding-container .btn-primary {
   background: var(--primary);
   color: white;
-  min-width: 180px;
 }
 
 .onboarding-container .btn-primary:hover:not(.disabled) {
@@ -333,8 +332,6 @@
 
 .onboarding-container .btn-start {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  font-size: 1.1rem;
-  padding: 1rem 2.5rem;
 }
 
 .onboarding-container .btn-icon {

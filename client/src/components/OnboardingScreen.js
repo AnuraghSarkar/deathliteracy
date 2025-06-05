@@ -1,10 +1,12 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaHeart, FaClipboardList, FaClock, FaUserShield, FaChartLine, FaLightbulb, FaUsers, FaArrowRight, FaCheck, FaBookOpen, FaBrain, FaComments } from 'react-icons/fa';
+import { useAuthContext } from '../context/AuthContext'; // Add this import
+import { FaHeart, FaClipboardList, FaClock, FaUserShield, FaChartLine, FaLightbulb, FaUsers, FaCheck, FaBookOpen, FaBrain, FaComments } from 'react-icons/fa';
 import '../styles/OnboardingScreen.css';
+
 const OnboardingScreen = () => {
   const navigate = useNavigate();
+  const { user, updateUser } = useAuthContext(); // Add useAuthContext
   const [currentStep, setCurrentStep] = useState(0);
   const [consent, setConsent] = useState({
     dataCollection: false,
@@ -13,7 +15,7 @@ const OnboardingScreen = () => {
   });
 
   // Check if user is logged in
-  const isLoggedIn = localStorage.getItem('userInfo');
+  const isLoggedIn = user;
 
   const steps = [
     {
@@ -186,28 +188,27 @@ const OnboardingScreen = () => {
     }
   };
 
-  const handleStartAssessment = async () => {
+const handleStartAssessment = async () => {
   if (!consent.dataCollection || !consent.understood) {
     alert('Please confirm your consent to data collection and understanding of the assessment before proceeding.');
     return;
   }
 
-  // Store consent preferences
   localStorage.setItem('assessmentConsent', JSON.stringify(consent));
 
   if (isLoggedIn) {
-    // Mark onboarding as completed
-    try {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-      await axios.put('/api/users/complete-onboarding', {}, {
-        headers: { Authorization: `Bearer ${userInfo.token}` }
-      });
-    } catch (error) {
-      console.error('Error marking onboarding complete:', error);
-    }
+    // Update user context 
+    updateUser({ 
+      hasCompletedOnboarding: true,
+      onboardingCompleted: true 
+    });
+    
+    localStorage.setItem('onboardingCompleted', 'true');
+    console.log('✅ Onboarding completed');
     
     navigate('/assessment');
   } else {
+    localStorage.setItem('onboardingCompleted', 'true');
     navigate('/register', { 
       state: { 
         fromOnboarding: true,
@@ -263,7 +264,6 @@ const OnboardingScreen = () => {
                 disabled={!canProceed()}
               >
                 {isLoggedIn ? 'Start Assessment' : 'Continue to Registration'}
-                <FaArrowRight className="btn-icon" />
               </button>
             ) : (
               <button 
@@ -271,7 +271,6 @@ const OnboardingScreen = () => {
                 onClick={handleNext}
               >
                 Next
-                <FaArrowRight className="btn-icon" />
               </button>
             )}
           </div>
@@ -280,7 +279,17 @@ const OnboardingScreen = () => {
             <div className="skip-option">
               <button 
                 className="btn-link"
-                onClick={() => navigate('/assessment')}
+                onClick={() => {
+                  // Also set completion flags when skipping
+                  if (isLoggedIn) {
+                    updateUser({ 
+                      hasCompletedOnboarding: true,
+                      onboardingCompleted: true 
+                    });
+                  }
+                  localStorage.setItem('onboardingCompleted', 'true');
+                  navigate('/assessment');
+                }}
               >
                 Skip to Assessment
               </button>

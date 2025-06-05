@@ -130,47 +130,76 @@ const AssessmentPage = () => {
       
       if (!parentQ) return;
 
-      // If has children, create grid question
-      if (group.children.length > 0) {
-        const firstChild = group.children[0];
-        
+      // **FIXED: Special handling for Q1 (Country dropdown)**
+      if (parentQ.questionId === 'Q1') {
+        const countries = countryList().getData();
         processedQuestions.push({
-          id: groupId,
+          id: parentQ.questionId,
           text: parentQ.text,
-          type: 'grid',
-          options: firstChild.options || [],
-          subQuestions: group.children.map(child => ({
-            id: child.questionId,
-            text: child.text,
-            options: child.options || []
+          type: 'dropdown',
+          options: countries.map(c => ({
+            value: c.label,
+            label: c.label
           })),
           category: parentQ.category,
           subcategory: parentQ.subcategory,
           conditionalLogic: parentQ.conditionalLogic
         });
+        return; // Skip to next question
+      }
+
+      // **FIXED: Create grid for questions with children that have options**
+      if (group.children.length > 0) {
+        const firstChild = group.children[0];
+        
+        // Only create grid if children have actual options
+        if (firstChild.options && firstChild.options.length > 0) {
+          processedQuestions.push({
+            id: groupId,
+            text: parentQ.text,
+            type: 'grid',
+            options: firstChild.options || [],
+            subQuestions: group.children.map(child => ({
+              id: child.questionId,
+              text: child.text,
+              options: child.options || []
+            })),
+            category: parentQ.category,
+            subcategory: parentQ.subcategory,
+            conditionalLogic: parentQ.conditionalLogic
+          });
+        } else {
+          // If children don't have options, treat parent as info question
+          processedQuestions.push({
+            id: parentQ.questionId,
+            text: parentQ.text,
+            type: 'info',
+            options: [],
+            category: parentQ.category,
+            subcategory: parentQ.subcategory,
+            conditionalLogic: parentQ.conditionalLogic
+          });
+        }
       } else {
-        // Single question
-        let questionType = parentQ.type;
+        // Single question processing
+        let questionType = 'single';
         let options = parentQ.options || [];
 
-        // Special handling for country dropdown
-        if (parentQ.questionId === 'Q1') {
-          questionType = 'dropdown';
-          const countries = countryList().getData();
-          options = countries.map(c => ({
-            value: c.label,
-            label: c.label
-          }));
-        } else if (parentQ.type === 'boolean') {
+        // Determine question type based on database type and options
+        if (parentQ.type === 'boolean' || 
+            (options.length === 2 && 
+             options.some(opt => opt.label === 'Yes') && 
+             options.some(opt => opt.label === 'No'))) {
           questionType = 'yesno';
-        } else if (parentQ.type === 'single_choice') {
-          questionType = 'single';
-        } else if (parentQ.type === 'scale') {
+        } else if (parentQ.type === 'likert_5' || 
+                   (options.length >= 4 && 
+                    (parentQ.text.toLowerCase().includes('agree') || 
+                     parentQ.text.toLowerCase().includes('able')))) {
           questionType = 'scale';
-        }
-
-        // Check if it's an info question (no options)
-        if (options.length === 0 && parentQ.questionId !== 'Q1') {
+        } else if (options.length > 0) {
+          questionType = 'single';
+        } else {
+          // No options = info question
           questionType = 'info';
         }
 
@@ -185,6 +214,7 @@ const AssessmentPage = () => {
         });
       }
     });
+    
     return processedQuestions;
   };
 
@@ -212,22 +242,31 @@ const AssessmentPage = () => {
   const currentQuestionData = getCurrentQuestion();
   const currentQuestion = currentQuestionData?.question;
 
-  // Validation function
+  // **FIXED: Validation function that handles all data types**
   const isCurrentQuestionAnswered = () => {
     if (!currentQuestion) return true;
 
     if (currentQuestion.type === 'grid') {
       // For grid questions, check if all sub-questions are answered
-      return currentQuestion.subQuestions.every(subQ => 
-        answers[subQ.id] && answers[subQ.id].trim() !== ''
-      );
+      return currentQuestion.subQuestions.every(subQ => {
+        const answer = answers[subQ.id];
+        return answer !== undefined && answer !== null && answer !== '';
+      });
     } else if (currentQuestion.type === 'info') {
       // Info questions don't require answers
       return true;
     } else {
-      // For single questions, check if answered
+      // For single questions, check if answered (works for strings, numbers, booleans)
       const answer = answers[currentQuestion.id];
-      return answer && answer.trim() !== '';
+      if (answer === undefined || answer === null) return false;
+      
+      // Handle string answers (like country dropdown)
+      if (typeof answer === 'string') {
+        return answer.trim() !== '';
+      }
+      
+      // Handle number answers (like radio buttons with numeric values)
+      return true; // If answer exists and is not null/undefined, it's valid
     }
   };
 
@@ -255,10 +294,10 @@ const AssessmentPage = () => {
       }));
       
       // Store demographics
-      if (['Q1', 'Q1a', 'Q2', 'Q3', 'Q4', 'Q5'].includes(questionId)) {
+      if (['Q1', 'Q1_1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(questionId)) {
         const demographicKey = {
           'Q1': 'country',
-          'Q1a': 'state', 
+          'Q1_1': 'state', 
           'Q2': 'location',
           'Q3': 'age',
           'Q4': 'gender',
@@ -272,6 +311,11 @@ const AssessmentPage = () => {
           }));
         }
       }
+    }
+    
+    // Clear validation error when user answers
+    if (validationError) {
+      setValidationError('');
     }
   };
 
@@ -321,17 +365,26 @@ const AssessmentPage = () => {
       return;
     }
 
-    // Check if all visible questions are answered
+    // **FIXED: Check if all visible questions are answered**
     const unansweredQuestions = visibleQuestions.filter(q => {
       if (q.type === 'grid') {
-        return !q.subQuestions.every(subQ => 
-          answers[subQ.id] && answers[subQ.id].trim() !== ''
-        );
+        return !q.subQuestions.every(subQ => {
+          const answer = answers[subQ.id];
+          return answer !== undefined && answer !== null && answer !== '';
+        });
       } else if (q.type === 'info') {
         return false; // Info questions don't need answers
       } else {
         const answer = answers[q.id];
-        return !answer || answer.trim() === '';
+        if (answer === undefined || answer === null) return true;
+        
+        // Handle string answers
+        if (typeof answer === 'string') {
+          return answer.trim() === '';
+        }
+        
+        // Handle non-string answers (numbers, etc.)
+        return false; // If answer exists and is not null/undefined, it's answered
       }
     });
 
@@ -350,6 +403,7 @@ const AssessmentPage = () => {
 
   const renderQuestion = () => {
     if (!currentQuestion) return null;
+    
     switch (currentQuestion.type) {
       case 'dropdown':
         return (
@@ -370,14 +424,16 @@ const AssessmentPage = () => {
             <h2>{currentQuestion.text}</h2>
             <div className="options-grid">
               {currentQuestion.options.map(option => (
-                <label key={option.value} className="option-label">
+                <label key={option.value} className="option-label radio-option">
                   <input
                     type="radio"
                     name={currentQuestion.id}
                     value={option.value}
-                    checked={answers[currentQuestion.id] === option.value}
+                    checked={answers[currentQuestion.id] === option.value} // Use == for type flexibility
                     onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                    className="radio-input"
                   />
+                  <span className="radio-custom"></span>
                   <span className="option-text">{option.label}</span>
                 </label>
               ))}
@@ -407,19 +463,25 @@ const AssessmentPage = () => {
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
-            <div className="scale-options">
-              {currentQuestion.options.map(option => (
-                <label key={option.value} className="scale-option">
-                  <input
-                    type="radio"
-                    name={currentQuestion.id}
-                    value={option.value}
-                    checked={answers[currentQuestion.id] === option.value}
-                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                  />
-                  <span className="scale-label">{option.label}</span>
-                </label>
-              ))}
+            <div className="scale-container">
+              <div className="scale-options">
+                {currentQuestion.options.map(option => (
+                  <label key={option.value} className="scale-option">
+                    <input
+                      type="radio"
+                      name={currentQuestion.id}
+                      value={option.value}
+                      checked={answers[currentQuestion.id] === option.value}
+                      onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                      className="scale-input"
+                    />
+                    <span className="scale-button">
+                      <span className="scale-number">{option.value}</span>
+                    </span>
+                    <span className="scale-label">{option.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         );
@@ -429,6 +491,17 @@ const AssessmentPage = () => {
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
             <div className="grid-question">
+              {/* Header row with scale options */}
+              <div className="grid-header">
+                <div className="grid-question-header">Question</div>
+                {currentQuestion.options.map(option => (
+                  <div key={option.value} className="grid-option-header">
+                    {option.value}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Question rows */}
               {currentQuestion.subQuestions.map(subQ => (
                 <div key={subQ.id} className="grid-row">
                   <div className="grid-question-text">{subQ.text}</div>
@@ -441,8 +514,9 @@ const AssessmentPage = () => {
                           value={option.value}
                           checked={answers[subQ.id] === option.value}
                           onChange={(e) => handleAnswerChange(subQ.id, e.target.value, true)}
+                          className="grid-radio"
                         />
-                        <span className="grid-option-text">{option.value}</span>
+                        <span className="grid-radio-custom"></span>
                       </label>
                     ))}
                   </div>
@@ -455,8 +529,10 @@ const AssessmentPage = () => {
       case 'info':
         return (
           <div className="question-content">
-            <h2>{currentQuestion.text}</h2>
-            <p className="info-text">This section contains multiple related questions.</p>
+            <div className="info-content">
+              <h2>{currentQuestion.text}</h2>
+              <p className="info-description">This section will ask you about related topics.</p>
+            </div>
           </div>
         );
 
@@ -529,7 +605,7 @@ const AssessmentPage = () => {
       <div className="assessment-content">
         {validationError && (
           <div className="validation-error">
-            <span className="error-icon">!</span>
+            <span className="error-icon">⚠️</span>
             {validationError}
           </div>
         )}
@@ -552,7 +628,7 @@ const AssessmentPage = () => {
           )}
         </div>
 
-        {currentQuestionIndex === questions.length - 1 ? (
+        {currentQuestionIndex >= questions.length - 1 || !questions.slice(currentQuestionIndex + 1).some(q => shouldShowQuestion(q)) ? (
           <button 
             className="btn-primary btn-complete"
             onClick={completeAssessment}
