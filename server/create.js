@@ -30,14 +30,14 @@ const createAdmin = async () => {
     console.log('Creating admin user...');
     const adminUser = await User.create({
       username: 'admin',
-      email: 'admin@deathliteracy.com',
+      email: 'example@deathliteracy.com',
       password: '########', // Will be hashed automatically
       role: 'admin'
     });
 
     console.log('🎉 Admin user created successfully!');
-    console.log('📧 Email: admin@deathliteracy.com');
-    console.log('🔑 Password: admin123456');
+    console.log('📧 Email: example@deathliteracy.com');
+    console.log('🔑 Password: #######');
     console.log('👤 Username:', adminUser.username);
     console.log('🎯 Role:', adminUser.role);
     console.log('\n🚀 Now you can login at: http://localhost:3000/login');
