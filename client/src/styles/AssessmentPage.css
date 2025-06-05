@@ -5,9 +5,7 @@
 }
 
 /* Loading and Error States */
-.loading,
-.error,
-.completion {
+.loading, .error, .completion {
   background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: var(--box-shadow);
@@ -27,16 +25,11 @@
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.error h2,
-.completion h2 {
+.error h2, .completion h2 {
   color: var(--primary);
   margin-bottom: 1rem;
 }
@@ -362,17 +355,11 @@
 }
 
 /* Scale Questions - Better Layout */
-.scale-container {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
 .scale-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .scale-option {
@@ -384,16 +371,24 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background-color: var(--card-bg);
-  width: 100%;
 }
 
 .scale-option:hover {
   border-color: var(--primary);
   transform: translateY(-1px);
-  box-shadow: var(--box-shadow);
 }
 
-.scale-option:has(.scale-input:checked) {
+.scale-option input[type="radio"] {
+  margin-right: 0.75rem;
+  accent-color: var(--primary);
+}
+
+.scale-option input[type="radio"]:checked + .scale-label {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.scale-option:has(input[type="radio"]:checked) {
   background-color: rgba(204, 41, 54, 0.1);
   border-color: var(--primary);
 }
@@ -401,81 +396,20 @@
 .scale-label {
   color: var(--text-dark);
   transition: color 0.3s ease;
-  flex: 1;
-  margin-left: 0.5rem;
 }
 
-.scale-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.scale-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  background-color: var(--card-bg);
-  transition: all 0.2s ease;
-  margin-right: 0.75rem;
-}
-
-.scale-input:checked + .scale-button {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-}
-
-.scale-number {
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.scale-input:checked + .scale-button .scale-number {
-  color: white;
-}
-
-/* Grid Questions - Improved Layout */
+/* Grid Questions - Responsive Table */
 .grid-question {
   margin-bottom: 2rem;
   overflow-x: auto;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  background-color: var(--card-bg);
-}
-
-.grid-header {
-  display: grid;
-  grid-template-columns: 2fr repeat(5, 1fr); /* Adjust based on your scale */
-  gap: 0.5rem;
-  align-items: center;
-  padding: 1rem;
-  background-color: var(--primary);
-  color: white;
-  font-weight: 600;
-  border-radius: 8px 8px 0 0;
-}
-
-.grid-question-header {
-  font-weight: 600;
-  text-align: left;
-}
-
-.grid-option-header {
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 500;
 }
 
 .grid-row {
   display: grid;
-  grid-template-columns: 2fr repeat(5, 1fr); /* Match header columns */
-  gap: 0.5rem;
+  grid-template-columns: 2fr 3fr;
+  gap: 1rem;
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
@@ -484,7 +418,6 @@
 
 .grid-row:last-child {
   border-bottom: none;
-  border-radius: 0 0 8px 8px;
 }
 
 .grid-row:nth-child(even) {
@@ -495,114 +428,42 @@
   font-weight: normal;
   color: var(--text-dark);
   transition: color 0.3s ease;
-  text-align: left;
-  padding-right: 1rem;
 }
 
 .grid-options {
-  display: contents; /* Makes each radio cell fill the grid columns */
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .grid-option {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 4px;
   transition: background-color 0.3s ease;
-  position: relative;
+  min-width: 60px;
 }
 
 .grid-option:hover {
   background-color: rgba(204, 41, 54, 0.1);
 }
 
-/* Hide default radio button in grid */
-.grid-radio {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+.grid-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 0.25rem;
+  accent-color: var(--primary);
 }
 
-/* Custom radio button styling for grid */
-.grid-radio-custom {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  background-color: var(--card-bg);
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.grid-radio:checked + .grid-radio-custom {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.grid-radio:checked + .grid-radio-custom::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: white;
-}
-
-/* Radio Button Fixes for Single Choice Questions */
-.radio-option {
-  position: relative;
-}
-
-.radio-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.radio-custom {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  background-color: var(--card-bg);
-  transition: all 0.2s ease;
-}
-
-.radio-input:checked + .radio-custom {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.radio-input:checked + .radio-custom::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: white;
-}
-
-/* Fix for single choice options */
-.option-label.radio-option {
-  padding-left: 3rem;
-}
-
-.option-label.radio-option .option-text {
-  padding-left: 0;
+.grid-option-text {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  text-align: center;
+  transition: color 0.3s ease;
 }
 
 /* Assessment Navigation - Better Layout */
@@ -712,42 +573,14 @@
     font-size: 1.1rem;
   }
 
-  .grid-header,
   .grid-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
     text-align: center;
   }
 
-  .grid-question-text {
-    text-align: center;
-    padding-right: 0;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-
   .grid-options {
-    display: flex;
     justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .grid-option {
-    min-width: 50px;
-    padding: 0.5rem;
-  }
-
-  .grid-option-header {
-    display: none; /* Hide column headers on mobile */
-  }
-
-  /* Show labels on mobile */
-  .grid-option::before {
-    content: attr(data-label);
-    font-size: 0.7rem;
-    color: var(--text-light);
-    margin-bottom: 0.25rem;
   }
 
   .assessment-navigation {
@@ -776,40 +609,18 @@
   .custom-dropdown {
     max-width: 100%;
   }
-
-  .scale-options {
-    gap: 0.5rem;
-  }
-
-  .scale-option {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .scale-button {
-    width: 35px;
-    height: 35px;
-  }
-
-  .scale-number {
-    font-size: 0.9rem;
-  }
-
-  .grid-radio-custom {
-    width: 18px;
-    height: 18px;
-  }
 }
 
 @media (max-width: 480px) {
   .grid-options {
     gap: 0.25rem;
   }
-
+  
   .grid-option {
-    min-width: 45px;
+    min-width: 50px;
     padding: 0.25rem;
   }
-
+  
   .grid-option-text {
     font-size: 0.7rem;
   }
@@ -829,5 +640,78 @@
 
   .option-text {
     padding-left: 1.5rem;
+  }
+}
+
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .assessment-container {
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .assessment-content {
+    padding: 1.5rem;
+  }
+
+  .question-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .grid-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .grid-options {
+    justify-content: center;
+  }
+
+  .assessment-navigation {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .nav-info {
+    order: -1;
+  }
+
+  .yesno-options {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .options-grid {
+    max-width: 100%;
+  }
+
+  .assessment-navigation .btn-primary,
+  .assessment-navigation .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-options {
+    gap: 0.25rem;
+  }
+  
+  .grid-option {
+    min-width: 50px;
+    padding: 0.25rem;
+  }
+  
+  .grid-option-text {
+    font-size: 0.7rem;
+  }
+
+  .assessment-content {
+    padding: 1rem;
+  }
+
+  .question-content h2 {
+    font-size: 1rem;
   }
 }
