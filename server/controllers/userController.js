@@ -135,21 +135,22 @@ const googleLogin = async (req, res) => {
   }
 };
 
-// @desc    Get user profile
+
+// @desc    Get logged‐in user’s profile
 // @route   GET /api/users/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-
+    const user = await User.findById(req.user._id).select('-password');
     if (user) {
-      res.json({
+      return res.json({
         _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
-        demographics: user.demographics,
-        consentToResearch: user.consentToResearch,
+        demographics: user.demographics || {},
+        consentToResearch: user.consentToResearch || false,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
       });
     } else {
       res.status(404);
@@ -159,6 +160,49 @@ const getUserProfile = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+
+// ADD THIS: @desc    Update logged-in user’s profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+  try {
+    // req.user is from protect middleware (jwt decode)
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    // Only update fields if they were sent in req.body
+    user.username = req.body.username ?? user.username;
+    user.email = req.body.email ?? user.email;
+    user.demographics = req.body.demographics ?? user.demographics;
+    user.consentToResearch = req.body.consentToResearch ?? user.consentToResearch;
+    // You can add any other profile fields you want editable
+
+    // If they included a new password, hash that too:
+    if (req.body.password) {
+      user.password = req.body.password; // your pre-save hook on model will hash it
+    }
+
+    const updatedUser = await user.save();
+
+    // Return updated profile (minus password)
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      demographics: updatedUser.demographics,
+      consentToResearch: updatedUser.consentToResearch,
+      hasCompletedOnboarding: updatedUser.hasCompletedOnboarding,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // @desc    Mark onboarding as completed
 // @route   PUT /api/users/complete-onboarding
 // @access  Private
@@ -196,4 +240,5 @@ module.exports = {
   googleLogin,
   getUserProfile,
   completeOnboarding,
+  updateUserProfile
 };

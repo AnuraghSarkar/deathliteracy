@@ -1,21 +1,42 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../context/AuthContext'; // Add this import
-import { FaHeart, FaClipboardList, FaClock, FaUserShield, FaChartLine, FaLightbulb, FaUsers, FaCheck, FaBookOpen, FaBrain, FaComments } from 'react-icons/fa';
-import '../styles/OnboardingScreen.css';
+// client/src/pages/OnboardingScreen.js
+
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuthContext } from '../context/AuthContext'
+import axios from 'axios'
+import {
+  FaHeart,
+  FaClipboardList,
+  FaClock,
+  FaUserShield,
+  FaChartLine,
+  FaLightbulb,
+  FaUsers,
+  FaCheck,
+  FaBookOpen,
+  FaBrain,
+  FaComments
+} from 'react-icons/fa'
+import '../styles/OnboardingScreen.css'
 
 const OnboardingScreen = () => {
-  const navigate = useNavigate();
-  const { user, updateUser } = useAuthContext(); // Add useAuthContext
-  const [currentStep, setCurrentStep] = useState(0);
+  const navigate = useNavigate()
+  const { user, updateUser } = useAuthContext()
+  const [currentStep, setCurrentStep] = useState(0)
   const [consent, setConsent] = useState({
     dataCollection: false,
     research: false,
     understood: false
-  });
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  // Check if user is logged in
-  const isLoggedIn = user;
+  // If user is already logged in AND has completed onboarding, skip to /assessment
+  useEffect(() => {
+    if (user?.hasCompletedOnboarding) {
+      navigate('/assessment')
+    }
+  }, [user, navigate])
 
   const steps = [
     {
@@ -28,7 +49,10 @@ const OnboardingScreen = () => {
           </div>
           <h1>Welcome to the Death Literacy Assessment</h1>
           <p className="step-description">
-            Death literacy is your knowledge, skills, and capacity to engage with death, dying, and bereavement in a meaningful and informed way. This includes understanding end-of-life care options, supporting others through loss, and navigating the systems and resources available during difficult times.
+            Death literacy is your knowledge, skills, and capacity to engage with death, dying, and
+            bereavement in a meaningful and informed way. This includes understanding end-of-life
+            care options, supporting others through loss, and navigating the systems and resources
+            available during difficult times.
           </p>
           <div className="benefits-grid">
             <div className="benefit-card">
@@ -60,7 +84,8 @@ const OnboardingScreen = () => {
           </div>
           <h1>About This Assessment</h1>
           <p className="step-description">
-            This assessment is based on the scientifically validated Death Literacy Index, developed by researchers to measure key aspects of death literacy across different populations.
+            This assessment is based on the scientifically validated Death Literacy Index, developed
+            by researchers to measure key aspects of death literacy across different populations.
           </p>
           <div className="assessment-details">
             <div className="detail-card">
@@ -117,7 +142,8 @@ const OnboardingScreen = () => {
           </div>
           <h1>Your Privacy Matters</h1>
           <p className="step-description">
-            We are committed to protecting your privacy. Please review and confirm your preferences below.
+            We are committed to protecting your privacy. Please review and confirm your preferences
+            below.
           </p>
           <div className="consent-section">
             <div className="consent-card">
@@ -125,29 +151,38 @@ const OnboardingScreen = () => {
                 <FaUserShield className="consent-icon" />
                 <h3>Data Collection & Use</h3>
               </div>
-              <p>We collect your assessment responses to generate your personalized report and improve our service. Your data is stored securely and never shared with third parties.</p>
+              <p>
+                We collect your assessment responses to generate your personalized report and improve
+                our service. Your data is stored securely and never shared with third parties.
+              </p>
               <label className="consent-checkbox">
                 <input
                   type="checkbox"
                   checked={consent.dataCollection}
-                  onChange={(e) => setConsent({...consent, dataCollection: e.target.checked})}
+                  onChange={(e) =>
+                    setConsent({ ...consent, dataCollection: e.target.checked })
+                  }
                 />
                 <span className="checkmark"></span>
                 I consent to the collection and use of my assessment data as described above
               </label>
             </div>
-            
+
             <div className="consent-card">
               <div className="consent-header">
                 <FaChartLine className="consent-icon" />
                 <h3>Research Participation (Optional)</h3>
               </div>
-              <p>Your anonymized responses may help advance death literacy research and improve end-of-life care. You can opt out at any time without affecting your assessment results.</p>
+              <p>
+                Your anonymized responses may help advance death literacy research and improve
+                end-of-life care. You can opt out at any time without affecting your assessment
+                results.
+              </p>
               <label className="consent-checkbox">
                 <input
                   type="checkbox"
                   checked={consent.research}
-                  onChange={(e) => setConsent({...consent, research: e.target.checked})}
+                  onChange={(e) => setConsent({ ...consent, research: e.target.checked })}
                 />
                 <span className="checkmark"></span>
                 I consent to my anonymized data being used for research purposes
@@ -159,12 +194,15 @@ const OnboardingScreen = () => {
                 <FaCheck className="consent-icon" />
                 <h3>Understanding</h3>
               </div>
-              <p>This assessment provides educational insights about death literacy. It is not a substitute for professional medical, legal, or psychological advice.</p>
+              <p>
+                This assessment provides educational insights about death literacy. It is not a
+                substitute for professional medical, legal, or psychological advice.
+              </p>
               <label className="consent-checkbox required">
                 <input
                   type="checkbox"
                   checked={consent.understood}
-                  onChange={(e) => setConsent({...consent, understood: e.target.checked})}
+                  onChange={(e) => setConsent({ ...consent, understood: e.target.checked })}
                 />
                 <span className="checkmark"></span>
                 I understand the purpose and limitations of this assessment
@@ -174,56 +212,71 @@ const OnboardingScreen = () => {
         </div>
       )
     }
-  ];
+  ]
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1)
     }
-  };
+  }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(currentStep - 1)
     }
-  };
-
-const handleStartAssessment = async () => {
-  if (!consent.dataCollection || !consent.understood) {
-    alert('Please confirm your consent to data collection and understanding of the assessment before proceeding.');
-    return;
   }
 
-  localStorage.setItem('assessmentConsent', JSON.stringify(consent));
+  const handleStartAssessment = async () => {
+    // Verify required consents
+    if (!consent.dataCollection || !consent.understood) {
+      alert(
+        'Please confirm your consent to data collection and understanding of the assessment before proceeding.'
+      )
+      return
+    }
 
-  if (isLoggedIn) {
-    // Update user context 
-    updateUser({ 
-      hasCompletedOnboarding: true,
-      onboardingCompleted: true 
-    });
-    
-    localStorage.setItem('onboardingCompleted', 'true');
-    console.log('✅ Onboarding completed');
-    
-    navigate('/assessment');
-  } else {
-    localStorage.setItem('onboardingCompleted', 'true');
-    navigate('/register', { 
-      state: { 
-        fromOnboarding: true,
-        consent: consent
+    setLoading(true)
+    setError('')
+
+    try {
+      // 1) Call backend to mark onboarding complete
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token || ''}`
+        }
       }
-    });
+
+      const response = await axios.put(
+        '/api/users/complete-onboarding',
+        {},
+        config
+      )
+
+      if (response.data.success) {
+        // 2) Update AuthContext so React “knows” onboarding is done
+        updateUser({ hasCompletedOnboarding: true })
+
+        // 3) Navigate to assessment
+        navigate('/assessment')
+      } else {
+        setError(response.data.message || 'Could not complete onboarding')
+      }
+    } catch (err) {
+      console.error('Onboarding error:', err)
+      setError(err.response?.data?.message || 'Something went wrong')
+    }
+
+    setLoading(false)
   }
-};
 
   const canProceed = () => {
+    // Only require checkboxes on the last step
     if (currentStep === steps.length - 1) {
-      return consent.dataCollection && consent.understood;
+      return consent.dataCollection && consent.understood
     }
-    return true;
-  };
+    return true
+  }
 
   return (
     <div className="onboarding-container">
@@ -231,7 +284,7 @@ const handleStartAssessment = async () => {
         {/* Progress Bar */}
         <div className="progress-header">
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             ></div>
@@ -242,53 +295,42 @@ const handleStartAssessment = async () => {
         </div>
 
         {/* Step Content */}
-        <div className="step-container">
-          {steps[currentStep].content}
-        </div>
+        <div className="step-container">{steps[currentStep].content}</div>
 
         {/* Navigation */}
         <div className="navigation-container">
           <div className="nav-buttons">
-            <button 
+            <button
               className="btn-secondary"
               onClick={handlePrevious}
               disabled={currentStep === 0}
             >
               Previous
             </button>
-            
+
             {currentStep === steps.length - 1 ? (
-              <button 
-                className={`btn-primary btn-start ${canProceed() ? '' : 'disabled'}`}
+              <button
+                className={`btn-primary btn-start ${!canProceed() ? 'disabled' : ''}`}
                 onClick={handleStartAssessment}
-                disabled={!canProceed()}
+                disabled={!canProceed() || loading}
               >
-                {isLoggedIn ? 'Start Assessment' : 'Continue to Registration'}
+                {loading ? 'Saving...' : 'Start Assessment'}
               </button>
             ) : (
-              <button 
-                className="btn-primary"
-                onClick={handleNext}
-              >
+              <button className="btn-primary" onClick={handleNext}>
                 Next
               </button>
             )}
           </div>
-          
-          {isLoggedIn && (
+
+          {user && (
             <div className="skip-option">
-              <button 
+              <button
                 className="btn-link"
                 onClick={() => {
-                  // Also set completion flags when skipping
-                  if (isLoggedIn) {
-                    updateUser({ 
-                      hasCompletedOnboarding: true,
-                      onboardingCompleted: true 
-                    });
-                  }
-                  localStorage.setItem('onboardingCompleted', 'true');
-                  navigate('/assessment');
+                  // If skipping, we still mark onboarding complete
+                  updateUser({ hasCompletedOnboarding: true })
+                  navigate('/assessment')
                 }}
               >
                 Skip to Assessment
@@ -296,9 +338,11 @@ const handleStartAssessment = async () => {
             </div>
           )}
         </div>
+
+        {error && <div className="onboarding-error">{error}</div>}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default OnboardingScreen;
+export default OnboardingScreen

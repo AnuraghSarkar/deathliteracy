@@ -286,7 +286,6 @@
     display: block;
     width: 100%;
     height: auto;
-    vertical-align: bottom;
   }
   
   .wave-path {
@@ -386,22 +385,7 @@
     transition: color 0.3s ease;
   }
   
-  .checkbox-group {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .checkbox-group input[type="checkbox"] {
-    margin-top: 0.25rem;
-  }
-  
-  .checkbox-label {
-    font-size: 0.875rem;
-    color: var(--text-dark);
-    transition: color 0.3s ease;
-  }
-  
+
   .auth-button {
     width: 100%;
     margin-top: 1rem;
@@ -519,6 +503,9 @@
     transition: color 0.3s ease;
   }
   
+  /* REMOVED: All radio button accent-color styles that were conflicting */
+  /* These were causing the issue with radio buttons */
+  
   /* Mobile responsiveness */
   @media (max-width: 768px) {
     .assessment-container {
@@ -531,10 +518,6 @@
     
     .question-text {
       font-size: 1.1rem;
-    }
-    
-    .option-item {
-      padding: 0.875rem 1rem;
     }
     
     .question-navigation {
@@ -900,4 +883,3 @@
   .btn-google span {
     font-size: 16px;
   }
-  

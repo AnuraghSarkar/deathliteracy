@@ -2,10 +2,8 @@ const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken'); // Add this line
 const router = express.Router();
-const { registerUser, loginUser, getUserProfile, completeOnboarding } = require('../controllers/userController');  // ADD completeOnboarding
+const { registerUser, loginUser, getUserProfile, completeOnboarding, updateUserProfile } = require('../controllers/userController');  // ADD completeOnboarding
 const { protect } = require('../middleware/authMiddleware');
-const User = require('../models/userModel');
-
 // Register user
 router.post('/', registerUser);
 
@@ -52,7 +50,10 @@ router.get(
     }
   }
 );
-// Get user profile (protected route)
+// GET profile (fetch)
 router.get('/profile', protect, getUserProfile);
+
+// PUT profile (update)
+router.put('/profile', protect, updateUserProfile);
 
 module.exports = router;

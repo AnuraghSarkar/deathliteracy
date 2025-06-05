@@ -130,7 +130,7 @@ const AssessmentPage = () => {
       
       if (!parentQ) return;
 
-      // **FIXED: Special handling for Q1 (Country dropdown)**
+      // Special handling for Q1 (Country dropdown)
       if (parentQ.questionId === 'Q1') {
         const countries = countryList().getData();
         processedQuestions.push({
@@ -145,10 +145,10 @@ const AssessmentPage = () => {
           subcategory: parentQ.subcategory,
           conditionalLogic: parentQ.conditionalLogic
         });
-        return; // Skip to next question
+        return;
       }
 
-      // **FIXED: Create grid for questions with children that have options**
+      // Create grid for questions with children that have options
       if (group.children.length > 0) {
         const firstChild = group.children[0];
         
@@ -242,7 +242,7 @@ const AssessmentPage = () => {
   const currentQuestionData = getCurrentQuestion();
   const currentQuestion = currentQuestionData?.question;
 
-  // **FIXED: Validation function that handles all data types**
+  // Validation function that handles all data types
   const isCurrentQuestionAnswered = () => {
     if (!currentQuestion) return true;
 
@@ -281,6 +281,7 @@ const AssessmentPage = () => {
     ? ((currentVisibleIndex + 1) / visibleQuestions.length) * 100 
     : 0;
 
+  // ENHANCED: Handle answer changes with custom radio button support
   const handleAnswerChange = (questionId, value, isGrid = false) => {
     if (isGrid) {
       setAnswers(prev => ({
@@ -316,6 +317,48 @@ const AssessmentPage = () => {
     // Clear validation error when user answers
     if (validationError) {
       setValidationError('');
+    }
+
+    // ENHANCED: Update visual state for custom radio buttons
+    setTimeout(() => {
+      updateCustomRadioVisualState(questionId, value, isGrid);
+    }, 0);
+  };
+
+  // NEW: Function to handle custom radio button visual states
+  const updateCustomRadioVisualState = (questionId, value, isGrid) => {
+    if (isGrid) {
+      // Handle grid radio buttons
+      document.querySelectorAll(`input[name="${questionId}"]`).forEach(input => {
+        const gridOption = input.closest('.grid-option');
+        if (gridOption) {
+          gridOption.classList.remove('selected');
+        }
+      });
+      
+      const checkedInput = document.querySelector(`input[name="${questionId}"]:checked`);
+      if (checkedInput) {
+        const gridOption = checkedInput.closest('.grid-option');
+        if (gridOption) {
+          gridOption.classList.add('selected');
+        }
+      }
+    } else {
+      // Handle regular radio buttons (single choice and scale)
+      document.querySelectorAll(`input[name="${questionId}"]`).forEach(input => {
+        const optionLabel = input.closest('.option-label, .scale-option');
+        if (optionLabel) {
+          optionLabel.classList.remove('selected');
+        }
+      });
+      
+      const checkedInput = document.querySelector(`input[name="${questionId}"]:checked`);
+      if (checkedInput) {
+        const optionLabel = checkedInput.closest('.option-label, .scale-option');
+        if (optionLabel) {
+          optionLabel.classList.add('selected');
+        }
+      }
     }
   };
 
@@ -365,7 +408,7 @@ const AssessmentPage = () => {
       return;
     }
 
-    // **FIXED: Check if all visible questions are answered**
+    // Check if all visible questions are answered
     const unansweredQuestions = visibleQuestions.filter(q => {
       if (q.type === 'grid') {
         return !q.subQuestions.every(subQ => {
@@ -424,12 +467,12 @@ const AssessmentPage = () => {
             <h2>{currentQuestion.text}</h2>
             <div className="options-grid">
               {currentQuestion.options.map(option => (
-                <label key={option.value} className="option-label radio-option">
+                <label key={option.value} className="option-label">
                   <input
                     type="radio"
                     name={currentQuestion.id}
                     value={option.value}
-                    checked={answers[currentQuestion.id] === option.value} // Use == for type flexibility
+                    checked={answers[currentQuestion.id] === option.value}
                     onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
                     className="radio-input"
                   />
@@ -475,9 +518,7 @@ const AssessmentPage = () => {
                       onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
                       className="scale-input"
                     />
-                    <span className="scale-button">
-                      <span className="scale-number">{option.value}</span>
-                    </span>
+                    <span className="scale-custom"></span>
                     <span className="scale-label">{option.label}</span>
                   </label>
                 ))}

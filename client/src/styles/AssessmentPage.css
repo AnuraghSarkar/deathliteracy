@@ -226,7 +226,9 @@
   background-color: var(--background);
 }
 
-/* Single Choice Questions */
+/* ============================================ */
+/* CUSTOM RADIO BUTTON SOLUTION - SINGLE CHOICE */
+/* ============================================ */
 .options-grid {
   display: grid;
   gap: 0.75rem;
@@ -245,7 +247,7 @@
   padding: 1rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   color: var(--text-dark);
   position: relative;
 }
@@ -253,15 +255,103 @@
 .option-label:hover {
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: var(--box-shadow);
+  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.2);
 }
 
+/* Hide the default radio input completely */
 .radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* Custom Radio Button Circle */
+.radio-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
   margin-right: 1rem;
-  width: 20px;
-  height: 20px;
-  accent-color: var(--primary);
-  transform: scale(1.2);
+  position: relative;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  background-color: var(--card-bg);
+}
+
+/* Inner dot for checked state */
+.radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.2s ease;
+}
+
+/* Checked state styling */
+.radio-input:checked + .radio-custom {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.radio-input:checked + .radio-custom::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Selected option styling */
+.radio-input:checked ~ .option-text,
+.option-label:has(.radio-input:checked) .option-text {
+  color: white;
+  font-weight: 600;
+}
+
+.option-label:has(.radio-input:checked) {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(204, 41, 54, 0.4);
+}
+
+.option-label:has(.radio-input:checked) .radio-custom {
+  border-color: white;
+  background-color: white;
+}
+
+.option-label:has(.radio-input:checked) .radio-custom::after {
+  background-color: var(--primary);
+}
+
+/* Fallback for browsers without :has() support */
+.option-label.selected {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(204, 41, 54, 0.4);
+}
+
+.option-label.selected .option-text {
+  color: white;
+  font-weight: 600;
+}
+
+.option-label.selected .radio-custom {
+  border-color: white;
+  background-color: white;
+}
+
+.option-label.selected .radio-custom::after {
+  background-color: var(--primary);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .option-text {
@@ -270,53 +360,9 @@
   flex: 1;
 }
 
-/* ENHANCED: Better visual feedback for selected radio buttons */
-.option-label:has(input[type="radio"]:checked) {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
-}
-
-.option-label:has(input[type="radio"]:checked) .option-text {
-  color: white;
-  font-weight: 600;
-}
-
-/* FIXED: Better radio button visibility - PRIMARY COLOR BACKGROUND */
-.option-label:has(input[type="radio"]:checked) .radio-input {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border for contrast */
-  outline-offset: -2px;
-  transform: scale(1.1);
-  opacity: 1 !important; /* Force visibility */
-  background-color: var(--primary) !important;
-}
-
-/* Fallback for browsers that don't support :has() */
-.option-label.selected {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
-}
-
-.option-label.selected .option-text {
-  color: white;
-  font-weight: 600;
-}
-
-.option-label.selected .radio-input {
-  accent-color: var(--primary) !important;
-  outline: 2px solid #ffffff !important;
-  outline-offset: -2px;
-  opacity: 1 !important;
-  background-color: var(--primary) !important;
-}
-
-/* Yes/No Questions */
+/* ============================================ */
+/* YES/NO QUESTIONS */
+/* ============================================ */
 .yesno-options {
   display: flex;
   gap: 1rem;
@@ -329,12 +375,12 @@
   flex: 1;
   padding: 1rem 2rem;
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-align: center;
   color: var(--text-dark);
 }
@@ -342,16 +388,20 @@
 .yesno-btn:hover {
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: var(--box-shadow);
+  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.2);
 }
 
 .yesno-btn.selected {
   background-color: var(--primary);
   color: white;
   border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(204, 41, 54, 0.4);
 }
 
-/* Scale Questions */
+/* ============================================ */
+/* SCALE QUESTIONS - CUSTOM RADIO */
+/* ============================================ */
 .scale-options {
   display: grid;
   gap: 0.5rem;
@@ -366,21 +416,61 @@
   border: 2px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   background-color: var(--card-bg);
 }
 
 .scale-option:hover {
   border-color: var(--primary);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.2);
 }
 
+/* Hide default scale input */
 .scale-input {
-  margin-right: 0.75rem;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* Custom scale radio button */
+.scale-custom {
   width: 20px;
   height: 20px;
-  accent-color: var(--primary);
-  transform: scale(1.2);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  position: relative;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  background-color: var(--card-bg);
+}
+
+.scale-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.2s ease;
+}
+
+/* Scale checked state */
+.scale-input:checked + .scale-custom {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.scale-input:checked + .scale-custom::after {
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .scale-label {
@@ -389,37 +479,36 @@
   flex: 1;
 }
 
-/* ENHANCED: Better visual feedback for selected scale options */
-.scale-option:has(input[type="radio"]:checked) {
+/* Scale selected styling */
+.scale-option:has(.scale-input:checked) {
   background-color: var(--primary);
   border-color: var(--primary);
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
+  box-shadow: 0 6px 20px rgba(204, 41, 54, 0.4);
 }
 
-.scale-option:has(input[type="radio"]:checked) .scale-label {
+.scale-option:has(.scale-input:checked) .scale-label {
   color: white;
   font-weight: 600;
 }
 
-/* FIXED: Better scale radio button visibility - PRIMARY COLOR */
-.scale-option:has(input[type="radio"]:checked) .scale-input {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border */
-  outline-offset: -2px;
-  transform: scale(1.1);
-  opacity: 1 !important; /* Force visibility */
-  background-color: var(--primary) !important;
+.scale-option:has(.scale-input:checked) .scale-custom {
+  border-color: white;
+  background-color: white;
 }
 
-/* Fallback for browsers that don't support :has() */
+.scale-option:has(.scale-input:checked) .scale-custom::after {
+  background-color: var(--primary);
+}
+
+/* Fallback for browsers without :has() support */
 .scale-option.selected {
   background-color: var(--primary);
   border-color: var(--primary);
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(204, 41, 54, 0.3);
+  box-shadow: 0 6px 20px rgba(204, 41, 54, 0.4);
 }
 
 .scale-option.selected .scale-label {
@@ -427,15 +516,22 @@
   font-weight: 600;
 }
 
-.scale-option.selected .scale-input {
-  accent-color: var(--primary) !important;
-  outline: 2px solid #ffffff !important;
-  outline-offset: -2px;
-  opacity: 1 !important;
-  background-color: var(--primary) !important;
+.scale-option.selected .scale-custom {
+  border-color: white;
+  background-color: white;
 }
 
-/* FIXED GRID QUESTIONS - Dynamic Column Layout */
+.scale-option.selected .scale-custom::after {
+  background-color: var(--primary);
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ============================================ */
+/* GRID QUESTIONS - CUSTOM RADIO */
+/* ============================================ */
+/* ============================================ */
+/* GRID QUESTIONS - FIXED CUSTOM RADIO */
+/* ============================================ */
 .grid-question {
   width: 100%;
   border-radius: 8px;
@@ -510,7 +606,7 @@
   align-items: center;
   padding: 1rem 0.5rem;
   border-right: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   min-width: 60px;
@@ -524,33 +620,85 @@
   background-color: rgba(204, 41, 54, 0.1);
 }
 
-/* GRID QUESTIONS - HIGH SPECIFICITY TO OVERRIDE GLOBAL STYLES */
-.assessment-container .grid-option:has(.grid-radio:checked) {
+/* FIXED: Hide default grid radio input completely */
+.grid-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* FIXED: Custom grid radio button - more prominent */
+.grid-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.2s ease;
+}
+
+/* FIXED: Grid checked state with higher specificity */
+.grid-option .grid-radio:checked + .grid-radio-custom {
+  border-color: var(--primary) !important;
   background-color: var(--primary) !important;
 }
 
-.assessment-container .grid-radio {
-  width: 22px !important;
-  height: 22px !important;
-  cursor: pointer !important;
-  accent-color: var(--primary) !important;
-  position: relative !important;
-  z-index: 1 !important;
-  opacity: 1 !important; /* Prevent disappearing */
+.grid-option .grid-radio:checked + .grid-radio-custom::after {
+  transform: translate(-50%, -50%) scale(1) !important;
+  background-color: white !important;
 }
 
-/* FIXED: Grid radio buttons with primary color background - HIGH SPECIFICITY */
-.assessment-container .grid-option:has(.grid-radio:checked) .grid-radio {
-  accent-color: var(--primary) !important; /* Primary color fill */
-  outline: 2px solid #ffffff !important; /* White border for contrast */
-  outline-offset: -2px !important;
-  transform: scale(1.2) !important;
-  opacity: 1 !important; /* Force visibility */
+/* FIXED: Selected state for the entire grid option */
+.grid-option:has(.grid-radio:checked) {
   background-color: var(--primary) !important;
 }
 
-/* Remove the checkmark - causing conflicts */
+.grid-option:has(.grid-radio:checked) .grid-radio-custom {
+  border-color: white !important;
+  background-color: white !important;
+}
 
+.grid-option:has(.grid-radio:checked) .grid-radio-custom::after {
+  background-color: var(--primary) !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+/* ENHANCED: Fallback for browsers without :has() support */
+.grid-option.selected {
+  background-color: var(--primary) !important;
+}
+
+.grid-option.selected .grid-radio-custom {
+  border-color: white !important;
+  background-color: white !important;
+}
+
+.grid-option.selected .grid-radio-custom::after {
+  background-color: var(--primary) !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
 /* Info Questions */
 .info-content {
   text-align: center;
@@ -660,9 +808,7 @@
   transform: none;
 }
 
-
-
-/* COMPLETELY REWRITTEN MOBILE RESPONSIVENESS */
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .assessment-container {
     margin: 1rem auto;
@@ -747,7 +893,7 @@
     font-size: 0.95rem;
   }
 
-  .radio-input {
+  .radio-custom {
     width: 20px;
     height: 20px;
     margin-right: 0.75rem;
@@ -775,9 +921,9 @@
     padding: 0.875rem 1rem;
   }
 
-  .scale-input {
-    width: 20px;
-    height: 20px;
+  .scale-custom {
+    width: 18px;
+    height: 18px;
   }
 
   /* Mobile navigation */
@@ -839,7 +985,7 @@
     padding: 0.875rem;
   }
 
-  .radio-input {
+  .radio-custom {
     width: 18px;
     height: 18px;
   }
