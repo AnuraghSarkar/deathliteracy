@@ -33,49 +33,26 @@
     overflow-x: hidden;
   }
   
-  body {
-    background-color: var(--background);
-    background-size: 20px 20px;
-    background-image: radial-gradient(
-      circle at 100% 50%,
-      transparent 20%,
-      rgba(0, 0, 0, 0.03) 21%,
-      rgba(0, 0, 0, 0.03) 34%,
-      transparent 35%,
-      transparent
-    ),
-    radial-gradient(
-      circle at 0% 50%,
-      transparent 20%,
-      rgba(0, 0, 0, 0.03) 21%,
-      rgba(0, 0, 0, 0.03) 34%,
-      transparent 35%,
-      transparent
-    );
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-dark);
-    min-height: 100vh;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .dark-mode body {
-    background-image: radial-gradient(
-      circle at 100% 50%,
-      transparent 20%,
-      rgba(255, 255, 255, 0.03) 21%,
-      rgba(255, 255, 255, 0.03) 34%,
-      transparent 35%,
-      transparent
-    ),
-    radial-gradient(
-      circle at 0% 50%,
-      transparent 20%,
-      rgba(255, 255, 255, 0.03) 21%,
-      rgba(255, 255, 255, 0.03) 34%,
-      transparent 35%,
-      transparent
-    );
-  }
+/* Subtle Wave Pattern for Home Page */
+body {
+  background-color: var(--background);
+  background-size: 60px 60px;
+  background-image:     radial-gradient(ellipse 30px 20px at 50% 0%, rgba(0, 0, 0, 0.015), transparent),    radial-gradient(ellipse 30px 20px at 50% 100%, rgba(0, 0, 0, 0.015), transparent);
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-dark);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-transition: background-color 0.3s ease, color 0.3s ease;
+  -moz-transition: background-color 0.3s ease, color 0.3s ease;
+  -ms-transition: background-color 0.3s ease, color 0.3s ease;
+  -o-transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode body {
+  background-image: 
+    radial-gradient(ellipse 30px 20px at 50% 0%, rgba(255, 255, 255, 0.015), transparent),
+    radial-gradient(ellipse 30px 20px at 50% 100%, rgba(255, 255, 255, 0.015), transparent);
+}
   
   .container {
     width: 100%;
@@ -385,7 +362,22 @@
     transition: color 0.3s ease;
   }
   
-
+  .checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .checkbox-group input[type="checkbox"] {
+    margin-top: 0.25rem;
+  }
+  
+  .checkbox-label {
+    font-size: 0.875rem;
+    color: var(--text-dark);
+    transition: color 0.3s ease;
+  }
+  
   .auth-button {
     width: 100%;
     margin-top: 1rem;
@@ -448,6 +440,26 @@
     margin-top: 2rem;
   }
   
+  .progress-container {
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 8px;
+    background-color: var(--primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  
+  .progress-text {
+    text-align: right;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: var(--text-light);
+    transition: color 0.3s ease;
+  }
+  
   .question-card {
     background-color: var(--card-bg);
     border-radius: 8px;
@@ -483,6 +495,33 @@
   .options-container {
     margin-bottom: 2rem;
   }
+  
+  .option-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease, color 0.3s ease, border-color 0.3s ease;
+    color: var(--text-dark);
+  }
+  
+  .option-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+  }
+  
+  .option-item.selected {
+    background-color: rgba(204, 41, 54, 0.1);
+    border-color: var(--primary);
+  }
+  
   .question-navigation {
     display: flex;
     justify-content: space-between;
@@ -503,9 +542,6 @@
     transition: color 0.3s ease;
   }
   
-  /* REMOVED: All radio button accent-color styles that were conflicting */
-  /* These were causing the issue with radio buttons */
-  
   /* Mobile responsiveness */
   @media (max-width: 768px) {
     .assessment-container {
@@ -518,6 +554,10 @@
     
     .question-text {
       font-size: 1.1rem;
+    }
+    
+    .option-item {
+      padding: 0.875rem 1rem;
     }
     
     .question-navigation {
@@ -550,12 +590,41 @@
     color: var(--text-dark);
   }
   
+  .grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+  
+  .grid-table th, 
+  .grid-table td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .grid-table th:first-child,
+  .grid-table td:first-child {
+    text-align: left;
+    width: 40%;
+  }
+  
+  .grid-table th {
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
   .sub-question-text {
     font-weight: normal;
     color: var(--text-dark);
   }
   
-
+  .radio-cell input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+  
   /* Dropdown styling */
   .dropdown-question {
     margin-bottom: 2rem;
@@ -577,12 +646,64 @@
     border-color: var(--primary);
   }
   
+  /* Yes/No styling */
+  .yesno-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .yesno-option {
+    padding: 0.75rem 2rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+  }
+  
+  .yesno-option:hover {
+    border-color: var(--primary);
+  }
+  
+  .yesno-option.selected {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  
   /* Scale question styling */
   .scale-options {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 2rem;
+  }
+  
+  .scale-option {
+    flex: 1;
+    min-width: 60px;
+    padding: 0.75rem 0.5rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  
+  .scale-option:hover {
+    border-color: var(--primary);
+  }
+  
+  .scale-option.selected {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
   }
   
   /* Results page styling */
@@ -635,6 +756,33 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+  
+  .error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #FEE2E2;
+    color: #DC2626;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+  }
+  
+  .error-container h2 {
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .error-container p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    transition: color 0.3s ease;
+  }
+  
   /* Mobile Responsiveness */
   @media (max-width: 768px) {
     /* Mobile menu */
@@ -883,3 +1031,4 @@
   .btn-google span {
     font-size: 16px;
   }
+  

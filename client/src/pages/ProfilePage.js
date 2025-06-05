@@ -5,7 +5,7 @@ import axios from 'axios'
 import '../styles/ProfilePage.css'  // ← Make sure this path matches where you put the CSS
 
 const ProfilePage = () => {
-  const { user, updateUser, logout } = useAuthContext()
+  const { user, updateUser } = useAuthContext()
   const navigate = useNavigate()
 
   // Local form state

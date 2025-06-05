@@ -2,9 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import countryList from 'react-select-country-list';
+import { Radio, Space } from 'antd';
 import '../styles/AssessmentPage.css';
 
-// Custom Dropdown Component
+// List of Australian states/territories for Q1_1
+const australiaStates = [
+  'New South Wales',
+  'Victoria',
+  'Queensland',
+  'Western Australia',
+  'South Australia',
+  'Tasmania',
+  'Australian Capital Territory',
+  'Northern Territory'
+];
+
+// Custom Dropdown Component (unchanged)
 const CustomDropdown = ({ value, onChange, options, placeholder = "Select..." }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,8 +95,6 @@ const AssessmentPage = () => {
         const response = await axios.get('/api/questions');
         if (response.data.success) {
           const fetchedQuestions = response.data.questions;
-          
-          // Process and format questions
           const processedQuestions = processQuestionsFromDB(fetchedQuestions);
           setQuestions(processedQuestions);
         } else {
@@ -103,10 +114,10 @@ const AssessmentPage = () => {
   const processQuestionsFromDB = (dbQuestions) => {
     const processedQuestions = [];
     const questionGroups = {};
-    
+
     // Sort questions by order
     const sortedQuestions = [...dbQuestions].sort((a, b) => a.order - b.order);
-    
+
     // Group questions by parent
     sortedQuestions.forEach(q => {
       if (q.parentQuestion) {
@@ -127,7 +138,6 @@ const AssessmentPage = () => {
     Object.keys(questionGroups).forEach(groupId => {
       const group = questionGroups[groupId];
       const parentQ = group.parent;
-      
       if (!parentQ) return;
 
       // Special handling for Q1 (Country dropdown)
@@ -137,10 +147,7 @@ const AssessmentPage = () => {
           id: parentQ.questionId,
           text: parentQ.text,
           type: 'dropdown',
-          options: countries.map(c => ({
-            value: c.label,
-            label: c.label
-          })),
+          options: countries.map(c => ({ value: c.label, label: c.label })),
           category: parentQ.category,
           subcategory: parentQ.subcategory,
           conditionalLogic: parentQ.conditionalLogic
@@ -151,8 +158,6 @@ const AssessmentPage = () => {
       // Create grid for questions with children that have options
       if (group.children.length > 0) {
         const firstChild = group.children[0];
-        
-        // Only create grid if children have actual options
         if (firstChild.options && firstChild.options.length > 0) {
           processedQuestions.push({
             id: groupId,
@@ -186,15 +191,19 @@ const AssessmentPage = () => {
         let options = parentQ.options || [];
 
         // Determine question type based on database type and options
-        if (parentQ.type === 'boolean' || 
-            (options.length === 2 && 
-             options.some(opt => opt.label === 'Yes') && 
-             options.some(opt => opt.label === 'No'))) {
+        if (
+          parentQ.type === 'boolean' ||
+          (options.length === 2 &&
+           options.some(opt => opt.label === 'Yes') &&
+           options.some(opt => opt.label === 'No'))
+        ) {
           questionType = 'yesno';
-        } else if (parentQ.type === 'likert_5' || 
-                   (options.length >= 4 && 
-                    (parentQ.text.toLowerCase().includes('agree') || 
-                     parentQ.text.toLowerCase().includes('able')))) {
+        } else if (
+          parentQ.type === 'likert_5' ||
+          (options.length >= 4 &&
+           (parentQ.text.toLowerCase().includes('agree') ||
+            parentQ.text.toLowerCase().includes('able')))
+        ) {
           questionType = 'scale';
         } else if (options.length > 0) {
           questionType = 'single';
@@ -214,17 +223,15 @@ const AssessmentPage = () => {
         });
       }
     });
-    
+
     return processedQuestions;
   };
 
   // Check if question should be shown based on conditional logic
   const shouldShowQuestion = (question) => {
     if (!question.conditionalLogic) return true;
-    
     const { showIf } = question.conditionalLogic;
     if (!showIf) return true;
-    
     const dependentAnswer = answers[showIf.questionId];
     return dependentAnswer === showIf.value;
   };
@@ -247,26 +254,19 @@ const AssessmentPage = () => {
     if (!currentQuestion) return true;
 
     if (currentQuestion.type === 'grid') {
-      // For grid questions, check if all sub-questions are answered
       return currentQuestion.subQuestions.every(subQ => {
         const answer = answers[subQ.id];
         return answer !== undefined && answer !== null && answer !== '';
       });
     } else if (currentQuestion.type === 'info') {
-      // Info questions don't require answers
       return true;
     } else {
-      // For single questions, check if answered (works for strings, numbers, booleans)
       const answer = answers[currentQuestion.id];
       if (answer === undefined || answer === null) return false;
-      
-      // Handle string answers (like country dropdown)
       if (typeof answer === 'string') {
         return answer.trim() !== '';
       }
-      
-      // Handle number answers (like radio buttons with numeric values)
-      return true; // If answer exists and is not null/undefined, it's valid
+      return true;
     }
   };
 
@@ -276,139 +276,77 @@ const AssessmentPage = () => {
   };
 
   const visibleQuestions = getVisibleQuestions();
-  const currentVisibleIndex = visibleQuestions.findIndex(q => q.id === currentQuestion?.id);
-  const progress = visibleQuestions.length > 0 && currentVisibleIndex >= 0
-    ? ((currentVisibleIndex + 1) / visibleQuestions.length) * 100 
-    : 0;
+  const currentVisibleIndex = visibleQuestions.findIndex(
+    q => q.id === currentQuestion?.id
+  );
+  const progress =
+    visibleQuestions.length > 0 && currentVisibleIndex >= 0
+      ? ((currentVisibleIndex + 1) / visibleQuestions.length) * 100
+      : 0;
 
-  // ENHANCED: Handle answer changes with custom radio button support
-  const handleAnswerChange = (questionId, value, isGrid = false) => {
-    if (isGrid) {
-      setAnswers(prev => ({
-        ...prev,
-        [questionId]: value
-      }));
-    } else {
-      setAnswers(prev => ({
-        ...prev,
-        [questionId]: value
-      }));
-      
-      // Store demographics
-      if (['Q1', 'Q1_1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(questionId)) {
-        const demographicKey = {
-          'Q1': 'country',
-          'Q1_1': 'state', 
-          'Q2': 'location',
-          'Q3': 'age',
-          'Q4': 'gender',
-          'Q5': 'terminalIllness'
-        }[questionId];
-        
-        if (demographicKey) {
-          setDemographics(prev => ({
-            ...prev,
-            [demographicKey]: value
-          }));
-        }
+  // Handle answer changes
+  const handleAnswerChange = (questionId, value) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+
+    // Store demographics for Q1 and Q1_1
+    if (['Q1', 'Q1_1', 'Q2', 'Q3', 'Q4', 'Q5'].includes(questionId)) {
+      const demographicKey = {
+        'Q1': 'country',
+        'Q1_1': 'state',
+        'Q2': 'location',
+        'Q3': 'age',
+        'Q4': 'gender',
+        'Q5': 'terminalIllness'
+      }[questionId];
+
+      if (demographicKey) {
+        setDemographics(prev => ({
+          ...prev,
+          [demographicKey]: value
+        }));
       }
     }
-    
-    // Clear validation error when user answers
+
     if (validationError) {
       setValidationError('');
-    }
-
-    // ENHANCED: Update visual state for custom radio buttons
-    setTimeout(() => {
-      updateCustomRadioVisualState(questionId, value, isGrid);
-    }, 0);
-  };
-
-  // NEW: Function to handle custom radio button visual states
-  const updateCustomRadioVisualState = (questionId, value, isGrid) => {
-    if (isGrid) {
-      // Handle grid radio buttons
-      document.querySelectorAll(`input[name="${questionId}"]`).forEach(input => {
-        const gridOption = input.closest('.grid-option');
-        if (gridOption) {
-          gridOption.classList.remove('selected');
-        }
-      });
-      
-      const checkedInput = document.querySelector(`input[name="${questionId}"]:checked`);
-      if (checkedInput) {
-        const gridOption = checkedInput.closest('.grid-option');
-        if (gridOption) {
-          gridOption.classList.add('selected');
-        }
-      }
-    } else {
-      // Handle regular radio buttons (single choice and scale)
-      document.querySelectorAll(`input[name="${questionId}"]`).forEach(input => {
-        const optionLabel = input.closest('.option-label, .scale-option');
-        if (optionLabel) {
-          optionLabel.classList.remove('selected');
-        }
-      });
-      
-      const checkedInput = document.querySelector(`input[name="${questionId}"]:checked`);
-      if (checkedInput) {
-        const optionLabel = checkedInput.closest('.option-label, .scale-option');
-        if (optionLabel) {
-          optionLabel.classList.add('selected');
-        }
-      }
     }
   };
 
   const nextQuestion = () => {
-    // Clear previous validation error
     setValidationError('');
-    
-    // Validate current question before proceeding
     if (!isCurrentQuestionAnswered()) {
       setValidationError('Please answer this question before proceeding.');
       return;
     }
 
     let nextIndex = currentQuestionIndex + 1;
-    
-    // Find next visible question
     while (nextIndex < questions.length && !shouldShowQuestion(questions[nextIndex])) {
       nextIndex++;
     }
-    
     setCurrentQuestionIndex(nextIndex);
   };
 
   const prevQuestion = () => {
-    // Clear validation error when going back
     setValidationError('');
-    
     let prevIndex = currentQuestionIndex - 1;
-    
-    // Find previous visible question
     while (prevIndex >= 0 && !shouldShowQuestion(questions[prevIndex])) {
       prevIndex--;
     }
-    
     if (prevIndex >= 0) {
       setCurrentQuestionIndex(prevIndex);
     }
   };
 
   const completeAssessment = () => {
-    // Clear previous validation error
     setValidationError('');
-    
-    // Validate current question before completing
     if (!isCurrentQuestionAnswered()) {
       setValidationError('Please answer this question before completing the assessment.');
       return;
     }
 
-    // Check if all visible questions are answered
     const unansweredQuestions = visibleQuestions.filter(q => {
       if (q.type === 'grid') {
         return !q.subQuestions.every(subQ => {
@@ -416,28 +354,26 @@ const AssessmentPage = () => {
           return answer !== undefined && answer !== null && answer !== '';
         });
       } else if (q.type === 'info') {
-        return false; // Info questions don't need answers
+        return false;
       } else {
         const answer = answers[q.id];
         if (answer === undefined || answer === null) return true;
-        
-        // Handle string answers
         if (typeof answer === 'string') {
           return answer.trim() === '';
         }
-        
-        // Handle non-string answers (numbers, etc.)
-        return false; // If answer exists and is not null/undefined, it's answered
+        return false;
       }
     });
 
     if (unansweredQuestions.length > 0) {
-      setValidationError(`Please answer all questions. You have ${unansweredQuestions.length} unanswered questions.`);
+      setValidationError(
+        `Please answer all questions. You have ${unansweredQuestions.length} unanswered questions.`
+      );
       return;
     }
 
-    navigate('/results', { 
-      state: { 
+    navigate('/results', {
+      state: {
         answers,
         demographics
       }
@@ -446,9 +382,49 @@ const AssessmentPage = () => {
 
   const renderQuestion = () => {
     if (!currentQuestion) return null;
-    
+
     switch (currentQuestion.type) {
       case 'dropdown':
+        // Special handling for Q1 (Country of residence)
+        if (currentQuestion.id === 'Q1') {
+          return (
+            <div className="question-content">
+              <h2>{currentQuestion.text}</h2>
+
+              {/* Country dropdown (searchable) */}
+              <CustomDropdown
+                value={answers['Q1'] || ''}
+                onChange={(value) => handleAnswerChange('Q1', value)}
+                options={currentQuestion.options}
+                placeholder="Select a country..."
+              />
+
+              {/* Q1_1: Plain <select> for state, only if country === Australia */}
+              {answers['Q1'] === 'Australia' && (
+                <div className="state-select-wrapper">
+                  <label htmlFor="Q1_1" className="state-label">
+                    Name of State
+                  </label>
+                  <select
+                    id="Q1_1"
+                    name="Q1_1"
+                    className="state-select-simple"
+                    value={answers['Q1_1'] || ''}
+                    onChange={(e) => handleAnswerChange('Q1_1', e.target.value)}
+                  >
+                    <option value="">Select a state...</option>
+                    {australiaStates.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          );
+        }
+        // All other dropdown questions
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
@@ -456,7 +432,7 @@ const AssessmentPage = () => {
               value={answers[currentQuestion.id] || ''}
               onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
               options={currentQuestion.options}
-              placeholder="Select a country..."
+              placeholder="Select an option..."
             />
           </div>
         );
@@ -465,21 +441,31 @@ const AssessmentPage = () => {
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
-            <div className="options-grid">
-              {currentQuestion.options.map(option => (
-                <label key={option.value} className="option-label">
-                  <input
-                    type="radio"
-                    name={currentQuestion.id}
-                    value={option.value}
-                    checked={answers[currentQuestion.id] === option.value}
-                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                    className="radio-input"
-                  />
-                  <span className="radio-custom"></span>
-                  <span className="option-text">{option.label}</span>
-                </label>
-              ))}
+            <div className="antd-radio-wrapper">
+              <Radio.Group
+                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                value={answers[currentQuestion.id]}
+                size="large"
+                style={{ width: '100%' }}
+              >
+                <Space direction="vertical" size="middle" style={{ width: '100%', display: 'flex' }}>
+                  {currentQuestion.options.map(option => (
+                    <div
+                      key={option.value}
+                      className="radio-option-container"
+                      onClick={() => handleAnswerChange(currentQuestion.id, option.value)}
+                    >
+                      <Radio 
+                        value={option.value}
+                        className="custom-radio-option"
+                        style={{ width: '100%', display: 'flex', pointerEvents: 'none' }}
+                      >
+                        {option.label}
+                      </Radio>
+                    </div>
+                  ))}
+                </Space>
+              </Radio.Group>
             </div>
           </div>
         );
@@ -492,7 +478,9 @@ const AssessmentPage = () => {
               {currentQuestion.options.map(option => (
                 <button
                   key={option.value}
-                  className={`yesno-btn ${answers[currentQuestion.id] === option.value ? 'selected' : ''}`}
+                  className={`yesno-btn ${
+                    answers[currentQuestion.id] === option.value ? 'selected' : ''
+                  }`}
                   onClick={() => handleAnswerChange(currentQuestion.id, option.value)}
                 >
                   {option.label}
@@ -506,23 +494,24 @@ const AssessmentPage = () => {
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
-            <div className="scale-container">
-              <div className="scale-options">
-                {currentQuestion.options.map(option => (
-                  <label key={option.value} className="scale-option">
-                    <input
-                      type="radio"
-                      name={currentQuestion.id}
+            <div className="antd-radio-wrapper">
+              <Radio.Group
+                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                value={answers[currentQuestion.id]}
+                size="large"
+              >
+                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                  {currentQuestion.options.map(option => (
+                    <Radio 
+                      key={option.value} 
                       value={option.value}
-                      checked={answers[currentQuestion.id] === option.value}
-                      onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="scale-input"
-                    />
-                    <span className="scale-custom"></span>
-                    <span className="scale-label">{option.label}</span>
-                  </label>
-                ))}
-              </div>
+                      className="custom-scale-option"
+                    >
+                      {option.label}
+                    </Radio>
+                  ))}
+                </Space>
+              </Radio.Group>
             </div>
           </div>
         );
@@ -542,24 +531,29 @@ const AssessmentPage = () => {
                 ))}
               </div>
               
-              {/* Question rows */}
+              {/* Question rows with Ant Design Radio */}
               {currentQuestion.subQuestions.map(subQ => (
                 <div key={subQ.id} className="grid-row">
                   <div className="grid-question-text">{subQ.text}</div>
                   <div className="grid-options">
-                    {currentQuestion.options.map(option => (
-                      <label key={option.value} className="grid-option">
-                        <input
-                          type="radio"
-                          name={subQ.id}
-                          value={option.value}
-                          checked={answers[subQ.id] === option.value}
-                          onChange={(e) => handleAnswerChange(subQ.id, e.target.value, true)}
-                          className="grid-radio"
-                        />
-                        <span className="grid-radio-custom"></span>
-                      </label>
-                    ))}
+                    <Radio.Group
+                      onChange={(e) => handleAnswerChange(subQ.id, e.target.value)}
+                      value={answers[subQ.id]}
+                      style={{ display: 'flex', width: '100%' }}
+                    >
+                      {currentQuestion.options.map(option => (
+                        <div 
+                          key={option.value} 
+                          className="grid-radio-cell"
+                          onClick={() => handleAnswerChange(subQ.id, option.value)}
+                        >
+                          <Radio 
+                            value={option.value} 
+                            style={{ pointerEvents: 'none' }}
+                          />
+                        </div>
+                      ))}
+                    </Radio.Group>
                   </div>
                 </div>
               ))}
@@ -572,7 +566,7 @@ const AssessmentPage = () => {
           <div className="question-content">
             <div className="info-content">
               <h2>{currentQuestion.text}</h2>
-              <p className="info-description">This section will ask you about related topics.</p>
+              <p className="info-description">This section provides context for the next questions.</p>
             </div>
           </div>
         );
@@ -581,7 +575,7 @@ const AssessmentPage = () => {
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
-            <p>Question type not supported: {currentQuestion.type}</p>
+            <p>Unsupported question type: {currentQuestion.type}</p>
           </div>
         );
     }
