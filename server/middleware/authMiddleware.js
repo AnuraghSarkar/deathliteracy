@@ -51,27 +51,34 @@ passport.deserializeUser(async (id, done) => {
 // Middleware to protect routes
 const protect = async (req, res, next) => {
   let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     try {
-      token = req.headers.authorization.split(' ')[1];  // Extract the token from the header
-
-      // Verify token and decode the user info
+      token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Fetch the user from the database using the decoded ID
-      req.user = await User.findById(decoded.id).select('-password');  // Ensure password is not included
-
-      next();  // Move to the next middleware/route handler
+      req.user = await User.findById(decoded.id).select('-password');
+      return next(); // ← Add return here
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
-
+   
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 
-module.exports = { protect };
+// new isAdmin middleware
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    return next();
+  } else {
+    return res.status(403).json({ message: 'Not authorized as an admin' });
+  }
+};
+
+module.exports = { protect, isAdmin };
