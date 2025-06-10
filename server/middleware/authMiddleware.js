@@ -14,17 +14,12 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('=== Google Strategy Debug ===');
-        console.log('Profile:', profile);
-        
         // Check if the user already exists in the database by Google ID
         const existingUser = await User.findOne({ googleId: profile.id });
 
         if (existingUser) {
-          console.log('Existing user found:', existingUser._id);
           return done(null, existingUser); // User exists, log them in
         } else {
-          console.log('Creating new user...');
           // Create a new user if they don't exist
           const newUser = new User({
             username: profile.displayName,
@@ -34,11 +29,9 @@ passport.use(
           });
 
           await newUser.save();
-          console.log('New user created:', newUser._id);
           return done(null, newUser);  // Return the newly created user
         }
       } catch (error) {
-        console.error('Google Strategy error:', error);
         done(error, null);  // If any error, pass it to the done callback
       }
     }
@@ -47,18 +40,15 @@ passport.use(
 
 // Serialize and deserialize user into the session
 passport.serializeUser((user, done) => {
-  console.log('Serializing user:', user._id);
   done(null, user._id);  // Use _id instead of id
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log('Deserializing user ID:', id);
     const user = await User.findById(id).select('-password');
     console.log('Deserialized user:', user ? user._id : 'NOT FOUND');
     done(null, user);
   } catch (error) {
-    console.error('Deserialize error:', error);
     done(error, null);
   }
 });

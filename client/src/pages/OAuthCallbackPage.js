@@ -4,14 +4,10 @@ const OAuthCallback = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const userDataString = urlParams.get('userData');
-    
-    console.log('OAuth Callback - Processing once...');
-    
+        
     if (userDataString) {
       try {
-        const userData = JSON.parse(decodeURIComponent(userDataString));
-        console.log('Storing user data and redirecting...');
-        
+        const userData = JSON.parse(decodeURIComponent(userDataString));        
         // Store data in localStorage
         localStorage.setItem('token', userData.token);
         localStorage.setItem('userInfo', JSON.stringify(userData));

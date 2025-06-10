@@ -44,7 +44,6 @@ const ResultsPage = () => {
       const response = await axios.post('/api/assessments', assessmentData, config);
       
       if (response.data.success) {
-        console.log('Assessment results saved successfully');
         // Store assessment ID for future reference
         localStorage.setItem('lastAssessmentId', response.data.assessmentId);
       }

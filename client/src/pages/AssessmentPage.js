@@ -92,15 +92,11 @@ const AssessmentComponent = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        console.log('Fetching questions from API...');
         const response = await axios.get('/api/questions');
-        console.log('API Response:', response.data);
         
         if (response.data.success) {
           const fetchedQuestions = response.data.questions;
-          console.log('Fetched questions:', fetchedQuestions);
           const processedQuestions = processQuestionsFromDB(fetchedQuestions);
-          console.log('Processed questions:', processedQuestions);
           setQuestions(processedQuestions);
         } else {
           setError('Failed to load questions');

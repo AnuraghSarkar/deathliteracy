@@ -61,9 +61,7 @@ app.get('/api/google',
 app.get('/api/google/callback', 
   passport.authenticate('google', { failureRedirect: 'http://localhost:3000/login?error=auth_failed' }),
   async (req, res) => {    
-    try {
-      console.log('=== OAuth Callback Debug ===');
-      
+    try {      
       if (!req.user) {
         return res.send(`
           <script>
