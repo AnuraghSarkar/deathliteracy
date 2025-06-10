@@ -1,6 +1,5 @@
 // src/context/AuthContext.js
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -17,97 +16,91 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, read token + userInfo from localStorage (if any)
-useEffect(() => {
-  const token = localStorage.getItem('adminToken');
-  const storedUser = localStorage.getItem('userInfo');
-
-  if (token && storedUser) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  // Wrap setUser in useCallback to prevent it from changing on every render
+  const setUserFromOAuth = useCallback((userData) => {
+    // Store token and user info
+    localStorage.setItem('token', userData.token);
+    localStorage.setItem('userInfo', JSON.stringify(userData));
     
-    // Include token in user object
-    const userFields = JSON.parse(storedUser);
-    setUser({ ...userFields, token });
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
-    setUser(null);
-  }
-
-  setLoading(false);
-}, []);
-
-  /**
-   * login(email, password)
-   *  - calls POST /api/users/login
-   *  - backend returns { <all user fields>, token: "<jwt>" }
-   *  - we pull out `token`, store it and store “user” in localStorage and state.
-   */
-const login = async (email, password) => {
-  try {
-    const { data } = await axios.post('/api/users/login', { email, password });
+    // Set axios default header
+    axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
     
-    if (data.token) {
-      const { token, ...userFields } = data;
+    // Update context state
+    setUser(userData);
+  }, []);
 
-      // Persist in localStorage
-      localStorage.setItem('adminToken', token);
-      localStorage.setItem('userInfo', JSON.stringify(userFields));
+  // Wrap login in useCallback
+  const login = useCallback(async (email, password) => {
+    try {
+      const { data } = await axios.post('/api/users/login', { email, password });
+      
+      if (data.token) {
+        const { token, ...userFields } = data;
 
-      // Set axios default header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        localStorage.setItem('token', token);
+        localStorage.setItem('userInfo', JSON.stringify(userFields));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // Update context state - INCLUDE TOKEN HERE
-      const userWithToken = { ...userFields, token };
-      setUser(userWithToken);
+        const userWithToken = { ...userFields, token };
+        setUser(userWithToken);
 
-      return { success: true, user: userWithToken };
-    } else {
+        return { success: true, user: userWithToken };
+      } else {
+        return {
+          success: false,
+          message: data.message || 'Login failed: no token returned',
+        };
+      }
+    } catch (err) {
       return {
         success: false,
-        message: data.message || 'Login failed: no token returned',
+        message: err.response?.data?.message || 'Login request failed',
       };
     }
-  } catch (err) {
-    return {
-      success: false,
-      message: err.response?.data?.message || 'Login request failed',
-    };
-  }
-};
-  /**
-   * updateUser(updates)
-   *  - merge `updates` into our current `user` state,
-   *    then persist updated user back to localStorage.
-   */
-  const updateUser = (updates) => {
+  }, []);
+
+  const updateUser = useCallback((updates) => {
     if (!user) return;
     const updated = { ...user, ...updates };
     setUser(updated);
     localStorage.setItem('userInfo', JSON.stringify(updated));
-  };
+  }, [user]);
 
-  /**
-   * logout()
-   *  - clear both user and token from state/localStorage,
-   *    and remove axios default Authorization header.
-   */
-  const logout = () => {
-    localStorage.removeItem('adminToken');
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
     localStorage.removeItem('userInfo');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
-  };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('userInfo');
+
+    if (token && storedUser) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const userFields = JSON.parse(storedUser);
+      setUser({ ...userFields, token });
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+      setUser(null);
+    }
+
+    setLoading(false);
+  }, []);
+
+  // Memoize the context value
+  const contextValue = React.useMemo(() => ({
+    user,
+    setUser: setUserFromOAuth,
+    loading,
+    login,
+    logout,
+    updateUser,
+  }), [user, setUserFromOAuth, loading, login, logout, updateUser]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

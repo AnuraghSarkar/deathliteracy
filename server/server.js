@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 const router = express.Router();
 const passport = require('passport');
 const session = require('express-session');
-const jwt = require('jsonwebtoken'); // Ensure JWT is imported
+const jwt = require('jsonwebtoken');
 
 // Load env vars
 dotenv.config();
@@ -19,8 +19,8 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from React frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // ← Allow all needed methods
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true
 }));
 
@@ -53,23 +53,47 @@ app.get('/', (req, res) => {
   res.send('Death Literacy API is running');
 });
 
-// Google auth routes (IMPORTANT: These should come before your API routes)
-app.get('/auth/google', 
+// Google auth routes
+app.get('/api/google', 
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-app.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
+app.get('/api/google/callback', 
+  passport.authenticate('google', { failureRedirect: 'http://localhost:3000/login?error=auth_failed' }),
   async (req, res) => {    
     try {
-      // Generate JWT token after Google login
-      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+      console.log('=== OAuth Callback Debug ===');
       
-      // Fetch complete user data from database (including hasCompletedOnboarding)
+      if (!req.user) {
+        return res.send(`
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ success: false, error: 'no_user' }, '*');
+              window.close();
+            } else {
+              window.location.href = 'http://localhost:3000/login?error=auth_failed';
+            }
+          </script>
+        `);
+      }
+
+      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
       const User = require('./models/userModel');
       const fullUser = await User.findById(req.user._id).select('-password');
       
-      // Send complete user data (like regular login)
+      if (!fullUser) {
+        return res.send(`
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({ success: false, error: 'user_not_found' }, '*');
+              window.close();
+            } else {
+              window.location.href = 'http://localhost:3000/login?error=auth_failed';
+            }
+          </script>
+        `);
+      }
+
       const userData = {
         _id: fullUser._id,
         username: fullUser.username,
@@ -78,14 +102,48 @@ app.get('/auth/google/callback',
         hasCompletedOnboarding: fullUser.hasCompletedOnboarding,
         token: token
       };
+      
+      // Check if this is a popup (has opener) or direct navigation
+      return res.send(`
+        <script>
+          if (window.opener) {
+            // This is a popup - send message to parent and close
+            window.opener.postMessage({ 
+              success: true, 
+              userData: ${JSON.stringify(userData)} 
+            }, '*');
+            window.close();
+          } else {
+            // This is direct navigation - redirect normally
+            localStorage.setItem('token', '${userData.token}');
+            localStorage.setItem('userInfo', '${JSON.stringify(userData)}');
             
-      // Redirect with complete user data
-      const redirectURL = `http://localhost:3000/oauth-callback?userData=${encodeURIComponent(JSON.stringify(userData))}`;
-      return res.redirect(redirectURL); // ← ADD RETURN HERE
+            if ('${userData.role}' === 'admin') {
+              window.location.href = 'http://localhost:3000/admin';
+            } else {
+              const destination = ${userData.hasCompletedOnboarding} ? '/assessment' : '/onboarding';
+              window.location.href = 'http://localhost:3000' + destination;
+            }
+          }
+        </script>
+      `);
       
     } catch (error) {
       console.error('OAuth callback error:', error);
-      return res.redirect('http://localhost:3000/login?error=oauth_failed'); // ← ADD RETURN HERE
+      return res.send(`
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ 
+              success: false, 
+              error: 'callback_error',
+              message: '${error.message}'
+            }, '*');
+            window.close();
+          } else {
+            window.location.href = 'http://localhost:3000/login?error=oauth_failed';
+          }
+        </script>
+      `);
     }
   }
 );
@@ -95,14 +153,14 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
 app.use('/api/assessments', require('./routes/assessmentRoutes'));
 app.use('/api/admin/users', require('./routes/adminRoutes'));
-app.use('/api/admin/questions', require('./routes/adminQuestionRoutes'));  // ← NEW
-app.use('/api/admin/categories', require('./routes/categoryRoutes'));       // ← NEW
+app.use('/api/admin/questions', require('./routes/adminQuestionRoutes'));
+app.use('/api/admin/categories', require('./routes/categoryRoutes'));
 app.use('/api/admin/assessments', require('./routes/adminAssessmentRoutes'));
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err.message);
   
-  // Don't send response if headers already sent
   if (res.headersSent) {
     console.error('Error after response sent:', err.message);
     return next(err);
@@ -114,6 +172,7 @@ app.use((err, req, res, next) => {
     stack: process.env.NODE_ENV === 'production' ? null : err.stack
   });
 });
+
 // Set port
 const PORT = process.env.PORT || 5001;
 

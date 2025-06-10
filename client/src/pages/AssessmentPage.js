@@ -17,7 +17,7 @@ const australiaStates = [
   'Northern Territory'
 ];
 
-// Custom Dropdown Component (unchanged)
+// Custom Dropdown Component
 const CustomDropdown = ({ value, onChange, options, placeholder = "Select..." }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,7 +78,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder = "Select..." })
   );
 };
 
-const AssessmentPage = () => {
+const AssessmentComponent = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -92,16 +92,23 @@ const AssessmentPage = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
+        console.log('Fetching questions from API...');
         const response = await axios.get('/api/questions');
+        console.log('API Response:', response.data);
+        
         if (response.data.success) {
           const fetchedQuestions = response.data.questions;
+          console.log('Fetched questions:', fetchedQuestions);
           const processedQuestions = processQuestionsFromDB(fetchedQuestions);
+          console.log('Processed questions:', processedQuestions);
           setQuestions(processedQuestions);
         } else {
           setError('Failed to load questions');
+          console.error('API returned success: false');
         }
       } catch (error) {
-        setError('Failed to load questions from database');
+        console.error('Error fetching questions:', error);
+        setError('Failed to load questions from database: ' + error.message);
       } finally {
         setLoading(false);
       }
@@ -227,6 +234,31 @@ const AssessmentPage = () => {
     return processedQuestions;
   };
 
+  // Helper function to get scale description
+  const getScaleDescription = (currentQuestion) => {
+    if (!currentQuestion.options || currentQuestion.options.length === 0) return '';
+    
+    const firstOption = currentQuestion.options[0];
+    const lastOption = currentQuestion.options[currentQuestion.options.length - 1];
+    
+    const getCleanLabel = (option) => {
+      if (typeof option.label === 'string') {
+        return option.label.replace(/^\d+\s*-\s*/, '').trim();
+      }
+      return option.value;
+    };
+    
+    const firstLabel = getCleanLabel(firstOption);
+    const lastLabel = getCleanLabel(lastOption);
+    
+    return `${firstOption.value} = ${firstLabel}, ${lastOption.value} = ${lastLabel}`;
+  };
+
+  // Helper function for grid headers
+  const getGridHeaderLabel = (option) => {
+    return option.value;
+  };
+
   // Check if question should be shown based on conditional logic
   const shouldShowQuestion = (question) => {
     if (!question.conditionalLogic) return true;
@@ -315,10 +347,23 @@ const AssessmentPage = () => {
     }
   };
 
+  const showValidationError = (message) => {
+    setValidationError(message);
+    // Scroll to error message
+    setTimeout(() => {
+      const errorElement = document.querySelector('.custom-validation-error');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
   const nextQuestion = () => {
     setValidationError('');
     if (!isCurrentQuestionAnswered()) {
-      setValidationError('Please answer this question before proceeding.');
+      const errorMsg = 'Please answer this question before proceeding.';
+      setValidationError(errorMsg);
+      showValidationError(errorMsg);
       return;
     }
 
@@ -343,7 +388,9 @@ const AssessmentPage = () => {
   const completeAssessment = () => {
     setValidationError('');
     if (!isCurrentQuestionAnswered()) {
-      setValidationError('Please answer this question before completing the assessment.');
+      const errorMsg = 'Please answer this question before completing the assessment.';
+      setValidationError(errorMsg);
+      showValidationError(errorMsg);
       return;
     }
 
@@ -366,9 +413,9 @@ const AssessmentPage = () => {
     });
 
     if (unansweredQuestions.length > 0) {
-      setValidationError(
-        `Please answer all questions. You have ${unansweredQuestions.length} unanswered questions.`
-      );
+      const errorMsg = `Please answer all questions. You have ${unansweredQuestions.length} unanswered questions.`;
+      setValidationError(errorMsg);
+      showValidationError(errorMsg);
       return;
     }
 
@@ -520,43 +567,78 @@ const AssessmentPage = () => {
         return (
           <div className="question-content">
             <h2>{currentQuestion.text}</h2>
-            <div className="grid-question">
-              {/* Header row with scale options */}
-              <div className="grid-header">
-                <div className="grid-question-header">Question</div>
-                {currentQuestion.options.map(option => (
-                  <div key={option.value} className="grid-option-header">
-                    {option.value}
+            
+            {/* Scale description outside table */}
+            <div className="scale-description">
+              {getScaleDescription(currentQuestion)}
+            </div>
+            
+            <div className="grid-question-wrapper">
+              {/* Desktop Table View */}
+              <table className="grid-table-desktop">
+                <thead>
+                  <tr className="grid-header">
+                    <th>Question</th>
+                    {currentQuestion.options.map(option => (
+                      <th key={option.value}>
+                        {getGridHeaderLabel(option)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                
+                <tbody>
+                  {currentQuestion.subQuestions.map(subQ => (
+                    <tr key={subQ.id} className="grid-row">
+                      <td className="question-cell">
+                        {subQ.text}
+                      </td>
+                      {currentQuestion.options.map(option => (
+                        <td 
+                          key={option.value} 
+                          className="radio-cell"
+                          onClick={() => handleAnswerChange(subQ.id, option.value)}
+                        >
+                          <label className="custom-radio">
+                            <input
+                              type="radio"
+                              name={subQ.id}
+                              value={option.value}
+                              checked={answers[subQ.id] === option.value}
+                              onChange={() => handleAnswerChange(subQ.id, option.value)}
+                            />
+                            <span className="radio-button"></span>
+                          </label>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile Card View */}
+              <div className="grid-cards-mobile">
+                {currentQuestion.subQuestions.map(subQ => (
+                  <div key={subQ.id} className="question-card">
+                    <div className="question-card-title">
+                      {subQ.text}
+                    </div>
+                    <div className="option-buttons">
+                      {currentQuestion.options.map(option => (
+                        <button
+                          key={option.value}
+                          className={`option-btn ${
+                            answers[subQ.id] === option.value ? 'selected' : ''
+                          }`}
+                          onClick={() => handleAnswerChange(subQ.id, option.value)}
+                        >
+                          {option.value}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
-              
-              {/* Question rows with Ant Design Radio */}
-              {currentQuestion.subQuestions.map(subQ => (
-                <div key={subQ.id} className="grid-row">
-                  <div className="grid-question-text">{subQ.text}</div>
-                  <div className="grid-options">
-                    <Radio.Group
-                      onChange={(e) => handleAnswerChange(subQ.id, e.target.value)}
-                      value={answers[subQ.id]}
-                      style={{ display: 'flex', width: '100%' }}
-                    >
-                      {currentQuestion.options.map(option => (
-                        <div 
-                          key={option.value} 
-                          className="grid-radio-cell"
-                          onClick={() => handleAnswerChange(subQ.id, option.value)}
-                        >
-                          <Radio 
-                            value={option.value} 
-                            style={{ pointerEvents: 'none' }}
-                          />
-                        </div>
-                      ))}
-                    </Radio.Group>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         );
@@ -585,8 +667,8 @@ const AssessmentPage = () => {
     return (
       <div className="assessment-container">
         <div className="loading">
-          <h2>Loading Assessment...</h2>
           <div className="loading-spinner"></div>
+          <p>Loading assessment...</p>
         </div>
       </div>
     );
@@ -612,7 +694,7 @@ const AssessmentPage = () => {
         <div className="completion">
           <h2>Assessment Complete!</h2>
           <p>You have completed all {visibleQuestions.length} questions.</p>
-          <button className="btn-primary btn-large" onClick={completeAssessment}>
+          <button className="btn-primary" onClick={completeAssessment}>
             View Results
           </button>
         </div>
@@ -622,13 +704,13 @@ const AssessmentPage = () => {
 
   return (
     <div className="assessment-container">
+      {/* Progress Section */}
       <div className="assessment-header">
         <div className="progress-section">
           <div className="progress-bar">
             <div 
-              className="progress-fill"
+              className="progress-fill" 
               style={{ width: `${Math.max(progress, 4)}%` }}
-              title={`Progress: ${progress.toFixed(1)}%`}
             ></div>
           </div>
           <div className="progress-text">
@@ -637,27 +719,40 @@ const AssessmentPage = () => {
         </div>
       </div>
 
+      {/* Question Content */}
       <div className="assessment-content">
+        {/* Custom Error Message */}
         {validationError && (
-          <div className="validation-error">
-            <span className="error-icon">⚠️</span>
-            {validationError}
+          <div className="custom-validation-error">
+            <div className="error-icon">⚠</div>
+            <div className="error-message">{validationError}</div>
+            <button 
+              className="error-close" 
+              onClick={() => setValidationError('')}
+              aria-label="Close error"
+            >
+              ×
+            </button>
           </div>
         )}
+        
         {renderQuestion()}
       </div>
 
+      {/* Navigation */}
       <div className="assessment-navigation">
-        <button 
+        <button
           className="btn-secondary"
           onClick={prevQuestion}
           disabled={currentQuestionIndex === 0}
         >
           Previous
         </button>
-        
+
         <div className="nav-info">
-          <span className="category-tag">{currentQuestion.category}</span>
+          {currentQuestion.category && (
+            <span className="category-tag">{currentQuestion.category}</span>
+          )}
           {currentQuestion.subcategory && (
             <span className="subcategory-tag">{currentQuestion.subcategory}</span>
           )}
@@ -665,7 +760,7 @@ const AssessmentPage = () => {
 
         {currentQuestionIndex >= questions.length - 1 || !questions.slice(currentQuestionIndex + 1).some(q => shouldShowQuestion(q)) ? (
           <button 
-            className="btn-primary btn-complete"
+            className="btn-primary"
             onClick={completeAssessment}
           >
             Complete Assessment
@@ -683,4 +778,4 @@ const AssessmentPage = () => {
   );
 };
 
-export default AssessmentPage;
+export default AssessmentComponent;
