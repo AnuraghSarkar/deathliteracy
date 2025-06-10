@@ -42,10 +42,6 @@ const DatabaseTest = () => {
     };
 
     try {
-      console.log('🔄 Testing database connections...');
-
-      // Test 1: Users endpoint
-      console.log('Testing users endpoint...');
       try {
         const usersResponse = await axios.get('/api/admin/users', {
           headers: { Authorization: `Bearer ${token}` }
@@ -56,18 +52,15 @@ const DatabaseTest = () => {
           data: usersResponse.data
         };
         testResults.usersData = usersResponse.data.users || [];
-        console.log('✅ Users endpoint working');
       } catch (error) {
         testResults.users = {
           status: 'error',
           message: error.response?.data?.message || error.message,
           error: error.response?.status || 'Network Error'
         };
-        console.log('❌ Users endpoint failed:', error.message);
       }
 
       // Test 2: Questions endpoint
-      console.log('Testing questions endpoint...');
       try {
         const questionsResponse = await axios.get('/api/admin/questions', {
           headers: { Authorization: `Bearer ${token}` }
@@ -78,18 +71,15 @@ const DatabaseTest = () => {
           data: questionsResponse.data
         };
         testResults.questionsData = questionsResponse.data.questions || [];
-        console.log('✅ Questions endpoint working');
       } catch (error) {
         testResults.questions = {
           status: 'error',
           message: error.response?.data?.message || error.message,
           error: error.response?.status || 'Network Error'
         };
-        console.log('❌ Questions endpoint failed:', error.message);
       }
 
       // Test 3: Categories endpoint
-      console.log('Testing categories endpoint...');
       try {
         const categoriesResponse = await axios.get('/api/admin/categories', {
           headers: { Authorization: `Bearer ${token}` }
@@ -100,14 +90,12 @@ const DatabaseTest = () => {
           data: categoriesResponse.data
         };
         testResults.categoriesData = categoriesResponse.data.categories || [];
-        console.log('✅ Categories endpoint working');
       } catch (error) {
         testResults.categories = {
           status: 'error',
           message: error.response?.data?.message || error.message,
           error: error.response?.status || 'Network Error'
         };
-        console.log('❌ Categories endpoint failed:', error.message);
       }
 
       // Overall connection status

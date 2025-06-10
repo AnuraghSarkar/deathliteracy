@@ -1093,10 +1093,10 @@ const AssessmentResults = () => {
                         }}
                       >
                         <span>{category}</span>
-                        <span>{score}/100</span>
+                        <span>{score}/10</span>
                       </div>
                       <Progress
-                        percent={Math.round(score)}
+                        percent={Math.round(score*10)}
                         size="small"
                       />
                     </div>

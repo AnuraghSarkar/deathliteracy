@@ -914,32 +914,22 @@ const convertQuestionsForDB = () => {
   return dbQuestions;
 };
 const seedCompleteQuestions = async () => {
-  try {
-    console.log('Connecting to MongoDB...');
-    console.log('Using URI:', process.env.MONGO_URI ? 'URI found' : 'URI not found');
-    
+  try {    
     // Connect to database directly like your working createAdmin script
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
 
     // Clear existing questions
     await Question.deleteMany({});
-    console.log('🗑️  Cleared existing questions');
 
     // Convert and insert questions
     const questionsForDB = convertQuestionsForDB();
     const insertedQuestions = await Question.insertMany(questionsForDB);
-
-    console.log(`✅ Seeded ${insertedQuestions.length} questions successfully`);
 
     // Display summary by category
     const categorySummary = {};
     insertedQuestions.forEach(q => {
       categorySummary[q.category] = (categorySummary[q.category] || 0) + 1;
     });
-
-    console.log('\n📊 Questions by Category:', categorySummary);
-
     // Display DLI-specific summary
     const dliSummary = {};
     insertedQuestions.forEach(q => {
@@ -949,11 +939,7 @@ const seedCompleteQuestions = async () => {
       }
     });
 
-    console.log('\n🎯 DLI Questions by Domain:', dliSummary);
-
     const totalDLI = Object.values(dliSummary).reduce((a, b) => a + b, 0);
-    console.log(`\n✅ Total DLI questions: ${totalDLI}/29 ${totalDLI === 29 ? '✓ CORRECT' : '✗ INCORRECT'}`);
-
     // Verify correct DLI structure
     const expectedStructure = {
       'Practical Knowledge': 8,   // Q16 (4) + Q17 (4)
@@ -962,24 +948,17 @@ const seedCompleteQuestions = async () => {
       'Community Knowledge': 9    // Q20 (5) + Q21 (4)
     };
 
-    console.log('\n📋 Expected DLI Structure:', expectedStructure);
-    console.log('📋 Actual DLI Structure:', dliSummary);
-
     const structureCorrect = Object.keys(expectedStructure).every(
       domain => dliSummary[domain] === expectedStructure[domain]
     );
 
-    console.log(`\n${structureCorrect ? '✅ DLI Structure CORRECT' : '❌ DLI Structure INCORRECT'}`);
-
     // Display question order verification
     const dliQuestions = insertedQuestions.filter(q => q.scoringInfo.isDLIQuestion);
-    console.log(`\n📝 DLI Questions (${dliQuestions.length}):`);
     dliQuestions.forEach(q => {
       console.log(`  ${q.questionId}: ${q.scoringInfo.dliDomain} - ${q.subcategory}`);
     });
 
     await mongoose.connection.close();
-    console.log('\n🔌 Database connection closed');
     process.exit(0);
   } catch (error) {
     console.error('❌ Error seeding questions:', error);

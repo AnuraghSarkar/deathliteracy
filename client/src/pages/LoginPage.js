@@ -60,7 +60,6 @@ const handleGoogleLogin = () => {
     const { success, userData, error } = event.data;
 
     if (success && userData) {
-      console.log('OAuth success, updating main window...');
       
       // Store in localStorage
       localStorage.setItem('token', userData.token);
