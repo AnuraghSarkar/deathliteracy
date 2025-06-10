@@ -1,3 +1,4 @@
+// middleware/authMiddleware.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const jwt = require('jsonwebtoken');
@@ -9,16 +10,21 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:5001/auth/google/callback',
+      callbackURL: 'http://localhost:5001/api/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log('=== Google Strategy Debug ===');
+        console.log('Profile:', profile);
+        
         // Check if the user already exists in the database by Google ID
         const existingUser = await User.findOne({ googleId: profile.id });
 
         if (existingUser) {
+          console.log('Existing user found:', existingUser._id);
           return done(null, existingUser); // User exists, log them in
         } else {
+          console.log('Creating new user...');
           // Create a new user if they don't exist
           const newUser = new User({
             username: profile.displayName,
@@ -28,9 +34,11 @@ passport.use(
           });
 
           await newUser.save();
+          console.log('New user created:', newUser._id);
           return done(null, newUser);  // Return the newly created user
         }
       } catch (error) {
+        console.error('Google Strategy error:', error);
         done(error, null);  // If any error, pass it to the done callback
       }
     }
@@ -38,12 +46,19 @@ passport.use(
 );
 
 // Serialize and deserialize user into the session
-passport.serializeUser((user, done) => done(null, user.id));  // Serialize user ID
+passport.serializeUser((user, done) => {
+  console.log('Serializing user:', user._id);
+  done(null, user._id);  // Use _id instead of id
+});
+
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id).select('-password');  // Use async/await for database operation
+    console.log('Deserializing user ID:', id);
+    const user = await User.findById(id).select('-password');
+    console.log('Deserialized user:', user ? user._id : 'NOT FOUND');
     done(null, user);
   } catch (error) {
+    console.error('Deserialize error:', error);
     done(error, null);
   }
 });
@@ -60,7 +75,7 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-password');
-      return next(); // ← Add return here
+      return next();
     } catch (error) {
       console.error(error);
       return res.status(401).json({ message: 'Not authorized, token failed' });

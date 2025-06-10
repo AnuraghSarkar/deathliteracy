@@ -38,7 +38,6 @@ const UserManagement = () => {
     setLoadingTable(true);
     try {
       const token = getAuthToken();
-      console.log('Using token:', token ? 'Token exists' : 'No token found');
       
       if (!token) {
         message.error('No authentication token found. Please log in again.');
@@ -263,19 +262,8 @@ const UserManagement = () => {
     }
 
     try {
-      console.log('=== DELETE USER DEBUG ===');
-      console.log('User ID to delete:', id);
-      console.log('Token exists:', !!token);
-      console.log('Current user:', user);
-      
       // Using the correct route based on server.js mounting
-      const response = await axios.delete(`/api/admin/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      console.log('Delete response:', response.data);
+      await axios.delete(`/api/admin/users/${id}`)
       message.success('User deleted successfully');
       fetchUsers(); // Refresh the user list
     } catch (err) {

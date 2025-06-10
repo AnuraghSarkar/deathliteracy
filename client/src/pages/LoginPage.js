@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuthContext(); 
+  const { login, setUser } = useAuthContext();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,11 +47,61 @@ const LoginPage = () => {
 
     setLoading(false);
   };
+const handleGoogleLogin = () => {
+  // Open Google OAuth in a popup
+  const popup = window.open(
+    'http://localhost:5001/api/google',
+    'google-auth-popup',
+    'width=500,height=600,scrollbars=yes,resizable=yes'
+  );
 
-  const handleGoogleLogin = () => {
-    // Redirect to backend Google OAuth route for authentication
-    window.location.href = 'http://localhost:5001/api/users/google';
+  // Listen for messages from the popup
+  const handleMessage = (event) => {
+    const { success, userData, error } = event.data;
+
+    if (success && userData) {
+      console.log('OAuth success, updating main window...');
+      
+      // Store in localStorage
+      localStorage.setItem('token', userData.token);
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      
+      // Set user in context
+      setUser(userData);
+      
+      // Navigate in the main window
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        const destination = userData.hasCompletedOnboarding ? '/assessment' : '/onboarding';
+        navigate(destination);
+      }
+    } else {
+      console.error('OAuth error:', error);
+      setError('Google login failed. Please try again.');
+    }
+
+    // Clean up
+    window.removeEventListener('message', handleMessage);
   };
+
+  // Add event listener for messages
+  window.addEventListener('message', handleMessage);
+
+  // Check if popup was blocked
+  if (!popup || popup.closed) {
+    setError('Popup blocked. Please allow popups for this site.');
+    window.removeEventListener('message', handleMessage);
+  }
+
+  // Optional: Handle popup being manually closed
+  const checkClosed = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(checkClosed);
+      window.removeEventListener('message', handleMessage);
+    }
+  }, 1000);
+};
 
   return (
     <div className="auth-page">

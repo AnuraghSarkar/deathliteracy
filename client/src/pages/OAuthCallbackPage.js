@@ -1,51 +1,41 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuthContext } from '../context/AuthContext';
 
 const OAuthCallback = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { setUser } = useAuthContext();
-
-useEffect(() => {
-  const handleOAuthCallback = () => {
-    try {  
-      // Check for different possible parameter names
-      const userDataString = searchParams.get('userData');
-      const token = searchParams.get('token');
-      
-      if (userDataString) {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userDataString = urlParams.get('userData');
+    
+    console.log('OAuth Callback - Processing once...');
+    
+    if (userDataString) {
+      try {
         const userData = JSON.parse(decodeURIComponent(userDataString));
+        console.log('Storing user data and redirecting...');
         
-        // After parsing userData, add debug
-
+        // Store data in localStorage
+        localStorage.setItem('token', userData.token);
         localStorage.setItem('userInfo', JSON.stringify(userData));
-        setUser(userData);        
-        const destination = userData.hasCompletedOnboarding ? '/assessment' : '/onboarding';
         
-        navigate(destination);
-      } else if (token) {
-        // Handle old token-only format
-        console.log('Received token only, need to fetch user data');
-        // We'll need to fetch user data using the token
-      } else {
-        console.error('No user data received from Google OAuth');
-        navigate('/login?error=oauth_failed');
+        // Redirect using window.location (this will cause a full page reload and stop the loop)
+        const destination = userData.hasCompletedOnboarding ? '/assessment' : '/onboarding';
+        window.location.replace(destination);
+        
+      } catch (error) {
+        console.error('OAuth parsing error:', error);
+        window.location.replace('/login?error=oauth_failed');
       }
-    } catch (error) {
-      navigate('/login?error=oauth_failed');
+    } else {
+      console.error('No userData in URL');
+      window.location.replace('/login?error=oauth_failed');
     }
-  };
-
-  handleOAuthCallback();
-}, [navigate, searchParams, setUser]);
+  }, []); // Empty dependency array - runs only once
 
   return (
     <div className="oauth-callback">
       <div className="container">
         <div className="loading-container">
           <h2>Completing Google Sign In...</h2>
-          <p>Please wait while we redirect you.</p>
+          <p>Please wait while we redirect you...</p>
         </div>
       </div>
     </div>
