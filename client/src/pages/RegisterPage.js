@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaGoogle } from 'react-icons/fa';  // For Google Icon (optional)
-
+import { useAuthContext } from '../context/AuthContext';  // Import Auth Context
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -18,6 +18,7 @@ const RegisterPage = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const {  setUser } = useAuthContext();
   
   const navigate = useNavigate();
 
@@ -65,8 +66,59 @@ const RegisterPage = () => {
   
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5001/auth/google';  // Redirect to backend for Google OAuth
+  // Open Google OAuth in a popup
+  const popup = window.open(
+    'http://localhost:5001/api/google',
+    'google-auth-popup',
+    'width=500,height=600,scrollbars=yes,resizable=yes'
+  );
+
+  // Listen for messages from the popup
+  const handleMessage = (event) => {
+    const { success, userData, error } = event.data;
+
+    if (success && userData) {
+      
+      // Store in localStorage
+      localStorage.setItem('token', userData.token);
+      localStorage.setItem('userInfo', JSON.stringify(userData));
+      
+      // Set user in context
+      setUser(userData);
+      
+      // Navigate in the main window
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        const destination = userData.hasCompletedOnboarding ? '/assessment' : '/onboarding';
+        navigate(destination);
+      }
+    } else {
+      console.error('OAuth error:', error);
+      setError('Google login failed. Please try again.');
+    }
+
+    // Clean up
+    window.removeEventListener('message', handleMessage);
   };
+
+  // Add event listener for messages
+  window.addEventListener('message', handleMessage);
+
+  // Check if popup was blocked
+  if (!popup || popup.closed) {
+    setError('Popup blocked. Please allow popups for this site.');
+    window.removeEventListener('message', handleMessage);
+  }
+
+  // Optional: Handle popup being manually closed
+  const checkClosed = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(checkClosed);
+      window.removeEventListener('message', handleMessage);
+    }
+  }, 1000);
+};
 
   return (
     <div className="auth-page">
